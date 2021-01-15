@@ -1,6 +1,5 @@
 from sqlalchemy import Column, String, Date
 from sqlalchemy.orm import relationship
-
 from .entity import Entity
 
 

@@ -1,6 +1,5 @@
 from sqlalchemy import Integer, Column, String
 from sqlalchemy.orm import relationship
-
 from data.model.base import Base
 
 
@@ -12,10 +11,10 @@ class Entity(Base):
     name = Column(String(45), nullable=False, index=True)
     address = Column(String(300))
 
-    accounts = relationship('Account', back_populated='holder')
-    objects = relationship('IntelObject', back_populated='holder')
-    licensor_in = relationship('License', back_populated='licensor')
-    licensee_in = relationship('License', back_populated='licensee')
+    accounts = relationship('Account', back_populates='holder')
+    objects = relationship('IntelObject', back_populates='holder')
+    licensor_in = relationship('License', back_populates='licensor')
+    licensee_in = relationship('License', back_populates='licensee')
 
     __mapper_args__ = {
         'polymorphic_on': type,

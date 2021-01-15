@@ -3,7 +3,7 @@ from sqlalchemy.dialects.mysql import MEDIUMBLOB
 from sqlalchemy.orm import relationship
 from .intelobject import IntelObject
 from .tmclassassociations import goods_association_table
-
+from data.model.nicedata import NiceData
 
 class Trademark(IntelObject):
     image = Column(MEDIUMBLOB)

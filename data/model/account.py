@@ -1,6 +1,5 @@
 from sqlalchemy import Column, Integer, ForeignKey, String, Boolean
 from sqlalchemy.orm import relationship
-
 from .base import Base
 
 
@@ -16,4 +15,4 @@ class Account(Base):
     is_current = Column(Boolean)
 
     holder_id = Column(Integer, ForeignKey('entities.ID'), nullable=False, index=True)
-    holder = relationship('Entity', back_populated='accounts')
+    holder = relationship('Entity', back_populates='accounts')

@@ -20,8 +20,11 @@ class License(Base):
     scan_link = Column(String(255), name='scanlink')
 
     type = Column(Integer, ForeignKey('objecttypes.id'), name='objtype', index=True)
+
     licensorID = Column(Integer, ForeignKey('entities.ID'), nullable=False, index=True)
-    licensor = relationship('Entity', back_populated='licensor_in')
+    licensor = relationship('Entity', back_populates='licensor_in')
+
     licenseeID = Column(Integer, ForeignKey('entities.ID'), nullable=False, index=True)
-    licensee = relationship('Entity', back_populated='licensee_in')
+    licensee = relationship('Entity', back_populates='licensee_in')
+
     objects = relationship('LicenseAssociation')
