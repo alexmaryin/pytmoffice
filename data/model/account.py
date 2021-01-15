@@ -15,5 +15,5 @@ class Account(Base):
     swift = Column(String(15))
     is_current = Column(Boolean)
 
-    holder_id = Column(ForeignKey('entities.ID'), nullable=False, index=True)
+    holder_id = Column(Integer, ForeignKey('entities.ID'), nullable=False, index=True)
     holder = relationship('Entity', back_populated='accounts')

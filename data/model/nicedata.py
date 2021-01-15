@@ -7,4 +7,4 @@ class NiceData(Base):
 
     id = Column(Integer, name='ID', primary_key=True, unique=True)
     class_number = Column(Integer, name='class', nullable=False)
-    goods = Column(String, nullable=False)
+    description = Column(String, name='goods', nullable=False)

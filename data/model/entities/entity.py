@@ -13,7 +13,9 @@ class Entity(Base):
     address = Column(String(300))
 
     accounts = relationship('Account', back_populated='holder')
-    objects = relationship('IntelObjects', back_populated='holder')
+    objects = relationship('IntelObject', back_populated='holder')
+    licensor_in = relationship('License', back_populated='licensor')
+    licensee_in = relationship('License', back_populated='licensee')
 
     __mapper_args__ = {
         'polymorphic_on': type,

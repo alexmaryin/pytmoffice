@@ -12,5 +12,5 @@ class AnnualFee(Base):
     code = Column(String(45), nullable=False)
     fee = Column(Integer)
 
-    objectType_id = Column(ForeignKey('objecttypes.id'), nullable=False, index=True)
+    objectType_id = Column(Integer, ForeignKey('objecttypes.id'), nullable=False, index=True)
     object_type = relationship("ObjectType", back_populates='annual_fees')

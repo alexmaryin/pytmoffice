@@ -11,3 +11,4 @@ class ObjectType(Base):
     object_type = Column(String(150), name='objecttype', nullable=False, unique=True)
 
     annual_fees = relationship('AnnualFee', backref='object_type')
+    licenses = relationship('License', back_populated='type')

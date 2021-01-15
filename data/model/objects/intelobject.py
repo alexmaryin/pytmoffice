@@ -17,10 +17,10 @@ class IntelObject(Base):
     term = Column(Date)
     type = Column(Integer, name='objtype', nullable=False, index=True)
 
-    groupID = Column(ForeignKey('groups.ID', ondelete='SET NULL', onupdate='SET NULL'), index=True)
+    group_id = Column(Integer, ForeignKey('groups.ID', ondelete='SET NULL', onupdate='SET NULL'), name='groupID', index=True)
     group = relationship('Group', back_populated='objects_in_group')
 
-    holder_id = Column(ForeignKey('entities.ID'), nullable=False, index=True)
+    holder_id = Column(Integer, ForeignKey('entities.ID'), nullable=False, index=True)
     holder = relationship('Entity', back_populated='objects')
 
     __mapper_args__ = {
