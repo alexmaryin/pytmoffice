@@ -1,13 +1,12 @@
 from sqlalchemy import Column, Boolean
-from sqlalchemy.dialects.mysql import MEDIUMBLOB
 from sqlalchemy.orm import relationship
+from .common_fields import HasImage
 from .intelobject import IntelObject
 from .tmclassassociations import goods_association_table
-from data.model.nicedata import NiceData
 
-class Trademark(IntelObject):
-    image = Column(MEDIUMBLOB)
-    image_preview = Column(MEDIUMBLOB, name='imagepreview')
+
+class Trademark(HasImage, IntelObject):
+
     is_common = Column(Boolean, name='iscommon')
 
     goods = relationship('NiceData', secondary=goods_association_table)

@@ -1,14 +1,8 @@
-from sqlalchemy import Column, Integer, Date
-from sqlalchemy.dialects.mysql import MEDIUMBLOB
-
+from .common_fields import HasAnnualPaid, HasImage
 from .intelobject import IntelObject
 
 
-class Design(IntelObject):
-    year_paid = Column(Integer, name='yearpaided')
-    last_paid = Column(Date, name='lastpaid')
-    image = Column(MEDIUMBLOB)
-    image_preview = Column(MEDIUMBLOB, name='imagepreview')
+class Design(HasAnnualPaid, HasImage, IntelObject):
 
     __mapper_args__ = {
         'polymorphic_identity': 2

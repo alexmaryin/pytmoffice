@@ -1,10 +1,8 @@
-from sqlalchemy import Column, Integer, Date
+from .common_fields import HasAnnualPaid
 from .intelobject import IntelObject
 
 
-class Invention(IntelObject):
-    year_paid = Column(Integer, name='yearpaided')
-    last_paid = Column(Date, name='lastpaid')
+class Invention(HasAnnualPaid, IntelObject):
 
     __mapper_args__ = {
         'polymorphic_identity': 1
