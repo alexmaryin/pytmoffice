@@ -86,11 +86,11 @@ class Legal(Entity):
     inn = Column(String(10))
     kpp = Column(String(9))
 
-    ceo_type = Column(Integer, ForeignKey('positions.ID', ondelete='SET NULL', onupdate='SET NULL'), index=True)
+    ceo_type = Column(Integer, ForeignKey('positions.ID', ondelete='SET NULL', onupdate='SET NULL'), name="ceotype", index=True)
     position = relationship('Position')
 
-    ceo_id = Column(Integer, ForeignKey('entities.ID', ondelete='SET NULL', onupdate='SET NULL'), index=True)
-    ceo = relationship('Person')
+    ceo_id = Column(Integer, ForeignKey('entities.ID', ondelete='SET NULL', onupdate='SET NULL'), name="ceoID", index=True)
+    ceo = relationship('Person', remote_side=[Entity.id])
 
     __mapper_args__ = {
         'polymorphic_identity': 2
@@ -142,7 +142,7 @@ class IntelObject(Base):
 class HasAnnualPaid:
     @declared_attr
     def year_paid(self):
-        return self.__table__.c.get('yearpaid', Column(Integer, name='yearpaid'))
+        return self.__table__.c.get('yearpaided', Column(Integer, name='yearpaided'))
 
     @declared_attr
     def last_paid(self):
@@ -162,14 +162,14 @@ class HasImage:
 class Invention(HasAnnualPaid, IntelObject):
 
     __mapper_args__ = {
-        'polymorphic_identity': 1
+        'polymorphic_identity': 2
     }
 
 
 class Design(HasAnnualPaid, HasImage, IntelObject):
 
     __mapper_args__ = {
-        'polymorphic_identity': 2
+        'polymorphic_identity': 3
     }
 
 
@@ -187,7 +187,7 @@ class Trademark(HasImage, IntelObject):
     goods = relationship('NiceData', secondary=goods_association_table)
 
     __mapper_args__ = {
-        'polymorphic_identity': 3
+        'polymorphic_identity': 1
     }
 
 
@@ -199,6 +199,7 @@ class LicenseAssociation(Base):
                         nullable=False, index=True)
     object_id = Column(Integer, ForeignKey('intelobjects.ID', ondelete='CASCADE', onupdate='CASCADE'), name='objectID',
                        nullable=False, index=True)
+    object = relationship('IntelObject')
     payment_type = Column(Integer, name='paymenttype', nullable=False)
     payment = Column(Float, nullable=False)
 
