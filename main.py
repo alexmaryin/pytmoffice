@@ -1,7 +1,7 @@
 import io
 
 from PIL import Image
-from data.model.base import *
+from data.model.model import *
 from data.repository.db import DataBaseConnection, connection_str
 import matplotlib.pyplot as plt
 

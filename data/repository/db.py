@@ -7,7 +7,7 @@ connection_str = "mysql+pymysql://root:1638432768@localhost/intelobjects20?chars
 
 class DataBaseConnection:
     def __init__(self, connect_str):
-        self.engine = sa.create_engine(connect_str, echo=False)
+        self.engine = sa.create_engine(connect_str, echo=True)
         _session = sessionmaker(bind=self.engine)
         self.session = _session()
 
