@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Date, Table, LargeBinary, Float
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, declared_attr
+from sqlalchemy.orm import relationship, declared_attr, deferred
 
 Base = declarative_base()
 
@@ -152,7 +152,7 @@ class HasAnnualPaid:
 class HasImage:
     @declared_attr
     def image(self):
-        return self.__table__.c.get('image', Column(LargeBinary))
+        return self.__table__.c.get('image', deferred(Column(LargeBinary)))
 
     @declared_attr
     def image_preview(self):
@@ -199,7 +199,7 @@ class LicenseAssociation(Base):
                         nullable=False, index=True)
     object_id = Column(Integer, ForeignKey('intelobjects.ID', ondelete='CASCADE', onupdate='CASCADE'), name='objectID',
                        nullable=False, index=True)
-    object = relationship('IntelObject')
+    object = relationship('IntelObject', lazy='joined')
     payment_type = Column(Integer, name='paymenttype', nullable=False)
     payment = Column(Float, nullable=False)
 
@@ -223,9 +223,9 @@ class License(Base):
     type = Column(Integer, ForeignKey('objecttypes.id'), name='objtype', index=True)
 
     licensorID = Column(Integer, ForeignKey('entities.ID'), nullable=False, index=True)
-    licensor = relationship('Entity', foreign_keys=[licensorID])
+    licensor = relationship('Entity', foreign_keys=[licensorID], lazy='joined')
 
     licenseeID = Column(Integer, ForeignKey('entities.ID'), nullable=False, index=True)
-    licensee = relationship('Entity', foreign_keys=[licenseeID])
+    licensee = relationship('Entity', foreign_keys=[licenseeID], lazy='joined')
 
-    objects = relationship('LicenseAssociation')
+    objects = relationship('LicenseAssociation', lazy='subquery')
