@@ -33,7 +33,7 @@ class DrawerList(ThemableBehavior, MDList):
 class Test(MDApp):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.view = menu_items[6]['name']
+        self.view = menu_items[0]['name']
         self.screen = Builder.load_file('kivy/common_list.kv')
 
     def build(self):
@@ -51,7 +51,7 @@ class Test(MDApp):
     def navigate(self, view):
         self.view = view
         self.root.ids.container.clear_widgets()
-        db = DataBaseConnection(connection_str)
+        db = DataBaseConnection('../')
         repo = IntelRepository(db)
         if view == 'Группы':
             self.show_groups(repo)

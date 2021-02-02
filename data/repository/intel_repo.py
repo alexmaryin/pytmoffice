@@ -1,5 +1,4 @@
 from sqlalchemy.orm import with_polymorphic
-
 from data.model.model import *
 
 menu_items = [{"name": "Группы", "icon": "folder"},
