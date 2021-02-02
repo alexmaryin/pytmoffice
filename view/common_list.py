@@ -4,7 +4,6 @@ from kivy.uix.boxlayout import BoxLayout
 from kivymd.app import MDApp
 from kivymd.theming import ThemableBehavior
 from kivymd.uix.list import TwoLineListItem, OneLineIconListItem, MDList
-
 from data.model.model import Legal, Person
 from data.repository.db import *
 from data.repository.intel_repo import IntelRepository, menu_items
@@ -20,7 +19,7 @@ class ItemDrawer(OneLineIconListItem):
 
 
 class DrawerList(ThemableBehavior, MDList):
-    def on_item_select(self, instance_item):
+    def on_item_select(self, instance_item, app):
         """Called when tap on a menu item."""
         for item in self.children:
             if item.text_color == self.theme_cls.primary_color:
@@ -28,6 +27,7 @@ class DrawerList(ThemableBehavior, MDList):
                 break
         instance_item.text_color = self.theme_cls.primary_color
         print(f'selected item {instance_item.text}')
+        app.navigate(instance_item.text)
 
 
 class Test(MDApp):
@@ -46,13 +46,16 @@ class Test(MDApp):
             self.root.ids.content_drawer.ids.menu_list.add_widget(
                 ItemDrawer(icon=item['icon'], text=item['name'])
             )
+        self.navigate(self.view)
 
+    def navigate(self, view):
+        self.view = view
+        self.root.ids.container.clear_widgets()
         db = DataBaseConnection(connection_str)
         repo = IntelRepository(db)
-
-        if self.view == 'Группы':
+        if view == 'Группы':
             self.show_groups(repo)
-        elif self.view == 'Владельцы':
+        elif view == 'Владельцы':
             self.show_entities(repo)
         else:
             pass
