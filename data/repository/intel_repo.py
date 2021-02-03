@@ -18,12 +18,15 @@ class IntelRepository:
     def __init__(self, db):
         self.source = db.session
 
-    def get_groups(self, filter_query=''):
+    def get_groups(self, filter_query='') -> list[Group]:
         if filter_query:
             return self.source.query(Group).filter(Group.group_name.like(f'%{filter_query}%')).order_by(Group.group_name).all()
         else:
             return self.source.query(Group).order_by(Group.ID).all()
 
-    def get_entities(self):
+    def get_entities(self) -> list[Entity]:
         all_entities = with_polymorphic(Entity, [Person, Legal])
         return self.source.query(all_entities).order_by(Entity.type).all()
+
+    def get_annual_fees(self) -> list[AnnualFee]:
+        return self.source.query(AnnualFee).order_by(AnnualFee.objectType_id, AnnualFee.year).all()

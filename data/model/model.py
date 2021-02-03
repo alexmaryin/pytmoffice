@@ -29,7 +29,7 @@ class AnnualFee(Base):
     fee = Column(Integer)
 
     objectType_id = Column(Integer, ForeignKey('objecttypes.id'), name='objecttype', nullable=False, index=True)
-    object_type = relationship("ObjectType")
+    object_type = relationship("ObjectType", lazy='joined')
 
 
 class Group(Base):
@@ -92,6 +92,12 @@ class Legal(Entity):
     ceo_id = Column(Integer, ForeignKey('entities.ID', ondelete='SET NULL', onupdate='SET NULL'), name="ceoID", index=True)
     ceo = relationship('Person', remote_side=[Entity.id])
 
+    def get_fullname(self) -> str:
+        return self.fullname or self.name
+
+    def get_simple_line(self) -> str:
+        return ' / '.join([self.ogrn or '', self.inn or '', self.kpp or ''])
+
     __mapper_args__ = {
         'polymorphic_identity': 2
     }
@@ -101,6 +107,12 @@ class Person(Entity):
     second_name = Column(String(45), name='secondname')
     surname = Column(String(45))
     birthdate = Column(Date)
+
+    def get_fullname(self) -> str:
+        return ' '.join([self.surname or '', self.name or '', self.second_name or ''])
+
+    def get_simple_line(self) -> str:
+        return self.address or ''
 
     __mapper_args__ = {
         'polymorphic_identity': 1

@@ -1,10 +1,10 @@
+import locale
 from kivy.lang import Builder
 from kivy.properties import StringProperty, ListProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivymd.app import MDApp
 from kivymd.theming import ThemableBehavior
 from kivymd.uix.list import TwoLineListItem, OneLineIconListItem, MDList
-from data.model.model import Legal, Person
 from data.repository.db import *
 from data.repository.intel_repo import IntelRepository, menu_items
 
@@ -26,21 +26,20 @@ class DrawerList(ThemableBehavior, MDList):
                 item.text_color = self.theme_cls.text_color
                 break
         instance_item.text_color = self.theme_cls.primary_color
-        print(f'selected item {instance_item.text}')
         app.navigate(instance_item.text)
 
 
 class Test(MDApp):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.view = menu_items[6]['name']
+        self.view = menu_items[0]['name']
+        self.db = DataBaseConnection(connection_str)
         self.screen = Builder.load_file('kivy/common_list.kv')
 
     def build(self):
         return self.screen
 
     def on_start(self):
-
         """Bind menu items from dict"""
         for item in menu_items:
             self.root.ids.content_drawer.ids.menu_list.add_widget(
@@ -51,12 +50,13 @@ class Test(MDApp):
     def navigate(self, view):
         self.view = view
         self.root.ids.container.clear_widgets()
-        db = DataBaseConnection(connection_str)
-        repo = IntelRepository(db)
+        repo = IntelRepository(self.db)
         if view == 'Группы':
             self.show_groups(repo)
         elif view == 'Владельцы':
             self.show_entities(repo)
+        elif view == 'Пошлины':
+            self.show_annual_fees(repo)
         else:
             pass
 
@@ -71,17 +71,22 @@ class Test(MDApp):
     def show_entities(self, repo):
         entities = repo.get_entities()
         self.root.ids.toolbar.title = self.view
-        label = ''
-        fullname = ''
         for entity in entities:
-            if isinstance(entity, Legal):
-                fullname = entity.name
-                label = f'{entity.ogrn} / {entity.inn} / {entity.kpp}'
-            elif isinstance(entity, Person):
-                fullname = f'{entity.surname} {entity.name} {entity.second_name}'
-                label = f'{entity.address}'
+            fullname = entity.get_fullname()
+            label = entity.get_simple_line()
             self.root.ids.container.add_widget(
                 TwoLineListItem(text=fullname, secondary_text=label)
+            )
+
+    def show_annual_fees(self, repo):
+        fees = repo.get_annual_fees()
+        self.root.ids.toolbar.title = self.view
+        locale.setlocale(locale.LC_MONETARY, 'ru')
+        for fee in fees:
+            first_line = f'{fee.code} пошлина за {fee.year} год = {locale.currency(fee.fee)}'
+            fee_object = fee.object_type.name
+            self.root.ids.container.add_widget(
+                TwoLineListItem(text=first_line, secondary_text=fee_object)
             )
 
 
