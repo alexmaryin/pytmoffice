@@ -2,6 +2,8 @@ from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Date, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, declared_attr, deferred
 
+from data.repository.db import DataBaseConnection
+
 Base = declarative_base()
 
 
@@ -241,3 +243,8 @@ class License(Base):
     licensee = relationship('Entity', foreign_keys=[licenseeID], lazy='joined')
 
     objects = relationship('LicenseAssociation', lazy='subquery')
+
+
+if __name__ == '__main__':
+    db = DataBaseConnection()
+    Base.metadata.create_all(bind=db.engine)
