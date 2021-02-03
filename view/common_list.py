@@ -5,6 +5,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivymd.app import MDApp
 from kivymd.theming import ThemableBehavior
 from kivymd.toast import toast
+from kivymd.uix.behaviors import TouchBehavior
 from kivymd.uix.card import MDCardSwipe
 from kivymd.uix.list import OneLineIconListItem, MDList
 from data.model.model import Group
@@ -12,7 +13,7 @@ from data.repository.db import *
 from data.repository.intel_repo import IntelRepository, menu_items
 
 
-class GenericListItem(MDCardSwipe):
+class GenericListItem(MDCardSwipe, TouchBehavior):
     selected = ObjectProperty()
     main_text = StringProperty()
     second_text = StringProperty()
@@ -20,6 +21,10 @@ class GenericListItem(MDCardSwipe):
 
     def edit_item(self):
         self.edit_callback(self.selected)
+
+    def on_double_tap(self, *args):
+        print(f'двойной клик на {self.selected}')
+        self.open_card()
 
 
 class ContentNavigationDrawer(BoxLayout):
