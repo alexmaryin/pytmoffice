@@ -81,7 +81,7 @@ class Test(MDApp):
     def show_annual_fees(self, repo):
         fees = repo.get_annual_fees()
         self.root.ids.toolbar.title = self.view
-        locale.setlocale(locale.LC_MONETARY, 'ru')
+        locale.setlocale(locale.LC_ALL, 'ru_RU')
         for fee in fees:
             first_line = f'{fee.code} пошлина за {fee.year} год = {locale.currency(fee.fee)}'
             fee_object = fee.object_type.name

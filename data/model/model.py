@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Date, Table, LargeBinary, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, declared_attr, deferred
@@ -34,6 +36,7 @@ class AnnualFee(Base):
     object_type = relationship("ObjectType", lazy='joined')
 
 
+@dataclass
 class Group(Base):
     __tablename__ = 'groups'
 
