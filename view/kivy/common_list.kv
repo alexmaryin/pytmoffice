@@ -1,4 +1,4 @@
-<ItemDrawer>:
+<MenuItemDrawer>:
     theme_text_color: "Custom"
     on_release: self.parent.on_item_select(self, app)
 
@@ -42,6 +42,27 @@
         DrawerList:
             id: menu_list
 
+<GenericListItem>:
+    size_hint_y: None
+    height: content.height
+    type_swipe: "hand"
+
+    MDCardSwipeLayerBox:
+        padding: "8dp"
+
+        MDIconButton:
+            icon: "file-edit-outline"
+            pos_hint: {"center_y": .5}
+            on_release: root.edit_item()
+
+    MDCardSwipeFrontBox:
+
+        TwoLineListItem:
+            id: content
+            text: root.main_text
+            secondary_text: root.second_text
+            _no_ripple_effect: True
+
 Screen:
     NavigationLayout:
         ScreenManager:
@@ -64,3 +85,4 @@ Screen:
 
             ContentNavigationDrawer:
                 id: content_drawer
+                padding: 0
