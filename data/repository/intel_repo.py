@@ -14,8 +14,8 @@ menu_items = [{"name": "Группы", "icon": "folder"},
 
 
 class IntelRepository:
-    def __init__(self, db):
-        self.source = db.session
+    def __init__(self, database):
+        self.source = database.session
 
     def get_groups(self, filter_query='') -> list[Group]:
         if filter_query:

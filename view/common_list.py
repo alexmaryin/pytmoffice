@@ -29,12 +29,12 @@ class DrawerList(ThemableBehavior, MDList):
         app.navigate(instance_item.text)
 
 
-class Test(MDApp):
+class CommonList(MDApp):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.view = menu_items[0]['name']
-        self.db = DataBaseConnection(connection_str)
-        self.screen = Builder.load_file('kivy/common_list.kv')
+        self.db = DataBaseConnection()
+        self.screen = Builder.load_file('view/kivy/common_list.kv')
 
     def build(self):
         return self.screen
@@ -88,7 +88,3 @@ class Test(MDApp):
             self.root.ids.container.add_widget(
                 TwoLineListItem(text=first_line, secondary_text=fee_object)
             )
-
-
-if __name__ == '__main__':
-    Test().run()

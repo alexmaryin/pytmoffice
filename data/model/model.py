@@ -1,10 +1,7 @@
-from dataclasses import dataclass
-
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Date, Table, LargeBinary, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, declared_attr, deferred
 
-from data.repository.db import DataBaseConnection
 
 Base = declarative_base()
 
@@ -36,7 +33,6 @@ class AnnualFee(Base):
     object_type = relationship("ObjectType", lazy='joined')
 
 
-@dataclass
 class Group(Base):
     __tablename__ = 'groups'
 
@@ -247,7 +243,3 @@ class License(Base):
 
     objects = relationship('LicenseAssociation', lazy='subquery')
 
-
-if __name__ == '__main__':
-    db = DataBaseConnection()
-    Base.metadata.create_all(bind=db.engine)
