@@ -2,8 +2,8 @@ import os
 import sqlalchemy as sa
 from sqlalchemy.orm import sessionmaker
 
-# connection_str = "mysql+pymysql://root:1638432768@localhost/intelobjects20?charset=utf8mb4"
-connection_str = 'sqlite+pysqlite:///{0}data/base.sqlite'
+connection_str = "mysql+pymysql://root:1638432768@localhost/intelobjects20?charset=utf8mb4"
+# connection_str = 'sqlite+pysqlite:///{0}data/base.sqlite'
 
 
 class DataBaseConnection:

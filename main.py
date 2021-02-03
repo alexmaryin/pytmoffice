@@ -21,12 +21,12 @@ def main():
     # g4 = Group(group_name='Новая папка')
     # repo.source.add_all([g1, g2, g3, g4])
     # repo.source.commit()
-    pos = Position(position='генеральный директор')
-    pos2 = Position(position='директор')
-    pers1 = Person(name='Иван', second_name='Иванович', surname='Иванов')
-    legal1 = Legal(name='ООО "Ромашка"', address='Москва', ceo=pers1, position=pos)
-    repo.source.add(legal1)
-    repo.source.commit()
+    # pos = Position(position='генеральный директор')
+    # pos2 = Position(position='директор')
+    # pers1 = Person(name='Иван', second_name='Иванович', surname='Иванов')
+    # legal1 = Legal(name='ООО "Ромашка"', address='Москва', ceo=pers1, position=pos)
+    # repo.source.add(legal1)
+    # repo.source.commit()
 
 
 if __name__ == '__main__':
