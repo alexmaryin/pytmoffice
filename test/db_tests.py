@@ -2,7 +2,6 @@ import pytest
 import sqlalchemy as sa
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import scoped_session, sessionmaker
-
 from data.model.model import Base, Group
 
 
@@ -47,5 +46,3 @@ def test_fail_with_similar_group_id(db_session):
     db_session.add(group)
     with pytest.raises(IntegrityError):
         db_session.commit()
-
-
