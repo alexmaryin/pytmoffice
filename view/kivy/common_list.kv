@@ -55,6 +55,11 @@
             pos_hint: {"center_y": .5}
             on_release: root.edit_item()
 
+        MDIconButton:
+            icon: "delete-outline"
+            pos_hint: {"center_y": .5}
+            on_release: root.delete_item()
+
     MDCardSwipeFrontBox:
 
         TwoLineListItem:
@@ -63,10 +68,18 @@
             secondary_text: root.second_text
             _no_ripple_effect: True
 
+<Spinner>
+    size_hint: None, None
+    size: dp(46), dp(46)
+    pos_hint: {'center_x': .5, 'center_y': .5}
+    active: True
+
 Screen:
     NavigationLayout:
         ScreenManager:
+            id: screen_manager
             Screen:
+                name: 'list_screen'
                 BoxLayout:
                     orientation: 'vertical'
 
@@ -79,6 +92,12 @@ Screen:
                     ScrollView:
                         MDList:
                             id: container
+            Screen:
+                name: 'loading_screen'
+                BoxLayout:
+                    orientation: 'vertical'
+                AsyncImage:
+                    source: 'view/images/loading.gif'
 
         MDNavigationDrawer:
             id: nav_drawer

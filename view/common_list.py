@@ -1,3 +1,4 @@
+import asyncio
 import locale
 from kivy.lang import Builder
 from kivy.properties import StringProperty, ListProperty, ObjectProperty
@@ -8,9 +9,15 @@ from kivymd.toast import toast
 from kivymd.uix.behaviors import TouchBehavior
 from kivymd.uix.card import MDCardSwipe
 from kivymd.uix.list import OneLineIconListItem, MDList
+from kivymd.uix.spinner import MDSpinner
+
 from data.model.model import Group
 from data.repository.db import *
 from data.repository.intel_repo import IntelRepository, menu_items
+
+
+class Spinner(MDSpinner):
+    state = StringProperty('start')
 
 
 class GenericListItem(MDCardSwipe, TouchBehavior):
@@ -18,13 +25,18 @@ class GenericListItem(MDCardSwipe, TouchBehavior):
     main_text = StringProperty()
     second_text = StringProperty()
     edit_callback = ObjectProperty()
+    delete_callback = ObjectProperty()
 
     def edit_item(self):
         self.edit_callback(self.selected)
 
+    def delete_item(self):
+        self.delete_callback(self.selected)
+
     def on_double_tap(self, *args):
         print(f'двойной клик на {self.selected}')
-        self.open_card()
+        if self.state == 'closed':
+            self.open_card()
 
 
 class ContentNavigationDrawer(BoxLayout):
@@ -47,8 +59,16 @@ class DrawerList(ThemableBehavior, MDList):
         app.navigate(instance_item.text)
 
 
+def on_edit(obj):
+    pass
+
+
 def on_group_edit(group: Group):
     toast(f'Здесь будет редактирование группы {group.group_name}', 1)
+
+
+def on_delete(obj):
+    toast(f'Предполагается удаление объекта {obj}', 1)
 
 
 class CommonList(MDApp):
@@ -57,6 +77,8 @@ class CommonList(MDApp):
         self.view = menu_items[0]['name']
         self.db = DataBaseConnection()
         self.screen = Builder.load_file('view/kivy/common_list.kv')
+        self.screen_manager = self.screen.ids.screen_manager
+        self.spinner = Spinner()
 
     def build(self):
         return self.screen
@@ -69,9 +91,17 @@ class CommonList(MDApp):
             )
         self.navigate(self.view)
 
+    def loading(self, state: bool):
+        if state:
+            self.root.ids.container.clear_widgets()
+            self.root.ids.nav_drawer.set_state('close')
+            self.root.ids.container.add_widget(self.spinner)
+        else:
+            self.root.ids.container.remove_widget(self.spinner)
+
     def navigate(self, view):
         self.view = view
-        self.root.ids.container.clear_widgets()
+        self.loading(True)
         repo = IntelRepository(self.db)
         if view == 'Группы':
             self.show_groups(repo)
@@ -81,7 +111,7 @@ class CommonList(MDApp):
             self.show_annual_fees(repo)
         else:
             toast('Пока не реализовано')
-        self.root.ids.nav_drawer.set_state('close')
+        self.loading(False)
 
     def show_groups(self, repo):
         groups = repo.get_groups()
@@ -89,7 +119,7 @@ class CommonList(MDApp):
         for group in groups:
             self.root.ids.container.add_widget(
                 GenericListItem(selected=group, main_text=f"{group.group_name}", second_text=f"{group.ID}",
-                                edit_callback=on_group_edit)
+                                edit_callback=on_group_edit, delete_callback=on_delete)
             )
 
     def show_entities(self, repo):
@@ -99,7 +129,8 @@ class CommonList(MDApp):
             fullname = entity.get_fullname()
             label = entity.get_simple_line()
             self.root.ids.container.add_widget(
-                GenericListItem(selected=entity, main_text=fullname, second_text=label)
+                GenericListItem(selected=entity, main_text=fullname, second_text=label,
+                                edit_callback=on_edit, delete_callback=on_delete)
             )
 
     def show_annual_fees(self, repo):
@@ -110,5 +141,6 @@ class CommonList(MDApp):
             first_line = f'{fee.code} пошлина за {fee.year} год = {locale.currency(fee.fee)}'
             fee_object = fee.object_type.name
             self.root.ids.container.add_widget(
-                GenericListItem(selected=fee, main_text=first_line, second_text=fee_object)
+                GenericListItem(selected=fee, main_text=first_line, second_text=fee_object,
+                                edit_callback=on_edit, delete_callback=on_delete)
             )
