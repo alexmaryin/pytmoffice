@@ -1,76 +1,9 @@
-<MenuItemDrawer>:
-    theme_text_color: "Custom"
-    on_release: self.parent.on_item_select(self, app)
-
-    IconLeftWidget:
-        id: icon
-        icon: root.icon
-        theme_text_color: "Custom"
-        text_color: root.text_color
-
-
-<ContentNavigationDrawer>:
-    orientation: "vertical"
-    padding: "8dp"
-    spacing: "8dp"
-
-    AnchorLayout:
-        anchor_x: "left"
-        size_hint_y: None
-        height: avatar.height
-
-        Image:
-            id: avatar
-            size_hint: None, None
-            size: "120dp", "120dp"
-            source: "view/images/tm_logo.png"
-
-    MDLabel:
-        text: "TM office"
-        font_style: "Button"
-        size_hint_y: None
-        height: self.texture_size[1]
-
-    MDLabel:
-        text: "© alexmaryin"
-        font_style: "Caption"
-        size_hint_y: None
-        height: self.texture_size[1]
-
-    ScrollView:
-
-        DrawerList:
-            id: menu_list
-
-<GenericListItem>:
-    size_hint_y: None
-    height: content.height
-    type_swipe: "hand"
-
-    MDCardSwipeLayerBox:
-        padding: "8dp"
-
-        MDIconButton:
-            icon: "file-edit-outline"
-            pos_hint: {"center_y": .5}
-            on_release: root.edit_item()
-
-        MDIconButton:
-            icon: "delete-outline"
-            pos_hint: {"center_y": .5}
-            on_release: root.delete_item()
-
-    MDCardSwipeFrontBox:
-
-        TwoLineListItem:
-            id: content
-            text: root.main_text
-            secondary_text: root.second_text
-            _no_ripple_effect: True
+#:include view/kivy/nav_drawer/menu_item_drawer.kv
+#:include view/kivy/nav_drawer/navdrawer.kv
+#:include view/kivy/list_item.kv
 
 <Spinner>
     size_hint: None, None
-    size: dp(46), dp(46)
     pos_hint: {'center_x': .5, 'center_y': .5}
     active: True
 

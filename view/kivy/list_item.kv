@@ -1,0 +1,25 @@
+<GenericListItem>:
+    size_hint_y: None
+    height: content.height
+    type_swipe: "hand"
+
+    MDCardSwipeLayerBox:
+        padding: "8dp"
+
+        MDIconButton:
+            icon: "file-edit-outline"
+            pos_hint: {"center_y": .5}
+            on_release: root.edit_item()
+
+        MDIconButton:
+            icon: "delete-outline"
+            pos_hint: {"center_y": .5}
+            on_release: root.delete_item()
+
+    MDCardSwipeFrontBox:
+
+        TwoLineListItem:
+            id: content
+            text: root.main_text
+            secondary_text: root.second_text
+            _no_ripple_effect: True

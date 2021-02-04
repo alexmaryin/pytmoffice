@@ -1,5 +1,6 @@
-import asyncio
 import locale
+
+from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.properties import StringProperty, ListProperty, ObjectProperty
 from kivy.uix.boxlayout import BoxLayout
@@ -10,7 +11,6 @@ from kivymd.uix.behaviors import TouchBehavior
 from kivymd.uix.card import MDCardSwipe
 from kivymd.uix.list import OneLineIconListItem, MDList
 from kivymd.uix.spinner import MDSpinner
-
 from data.model.model import Group
 from data.repository.db import *
 from data.repository.intel_repo import IntelRepository, menu_items
@@ -76,6 +76,7 @@ class CommonList(MDApp):
         super().__init__(**kwargs)
         self.view = menu_items[0]['name']
         self.db = DataBaseConnection()
+        self.repo = IntelRepository(self.db)
         self.screen = Builder.load_file('view/kivy/common_list.kv')
         self.screen_manager = self.screen.ids.screen_manager
         self.spinner = Spinner()
@@ -91,39 +92,35 @@ class CommonList(MDApp):
             )
         self.navigate(self.view)
 
-    def loading(self, state: bool):
-        if state:
-            self.root.ids.container.clear_widgets()
-            self.root.ids.nav_drawer.set_state('close')
-            self.root.ids.container.add_widget(self.spinner)
-        else:
-            self.root.ids.container.remove_widget(self.spinner)
+    def loading(self):
+        self.root.ids.container.clear_widgets()
+        self.root.ids.nav_drawer.set_state('close')
+        self.root.ids.container.add_widget(self.spinner)
 
     def navigate(self, view):
         self.view = view
-        self.loading(True)
-        repo = IntelRepository(self.db)
+        self.loading()
         if view == 'Группы':
-            self.show_groups(repo)
+            Clock.schedule_once(self.show_groups, 1)
         elif view == 'Владельцы':
-            self.show_entities(repo)
+            Clock.schedule_once(self.show_entities, 1)
         elif view == 'Пошлины':
-            self.show_annual_fees(repo)
+            Clock.schedule_once(self.show_annual_fees, 1)
         else:
             toast('Пока не реализовано')
-        self.loading(False)
 
-    def show_groups(self, repo):
-        groups = repo.get_groups()
+    def show_groups(self, dt):
+        groups = self.repo.get_groups()
         self.root.ids.toolbar.title = self.view
         for group in groups:
             self.root.ids.container.add_widget(
                 GenericListItem(selected=group, main_text=f"{group.group_name}", second_text=f"{group.ID}",
                                 edit_callback=on_group_edit, delete_callback=on_delete)
             )
+        self.root.ids.container.remove_widget(self.spinner)
 
-    def show_entities(self, repo):
-        entities = repo.get_entities()
+    def show_entities(self, dt):
+        entities = self.repo.get_entities()
         self.root.ids.toolbar.title = self.view
         for entity in entities:
             fullname = entity.get_fullname()
@@ -132,9 +129,10 @@ class CommonList(MDApp):
                 GenericListItem(selected=entity, main_text=fullname, second_text=label,
                                 edit_callback=on_edit, delete_callback=on_delete)
             )
+        self.root.ids.container.remove_widget(self.spinner)
 
-    def show_annual_fees(self, repo):
-        fees = repo.get_annual_fees()
+    def show_annual_fees(self, dt):
+        fees = self.repo.get_annual_fees()
         self.root.ids.toolbar.title = self.view
         locale.setlocale(locale.LC_ALL, 'ru_RU')
         for fee in fees:
@@ -144,3 +142,4 @@ class CommonList(MDApp):
                 GenericListItem(selected=fee, main_text=first_line, second_text=fee_object,
                                 edit_callback=on_edit, delete_callback=on_delete)
             )
+        self.root.ids.container.remove_widget(self.spinner)
