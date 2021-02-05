@@ -1,31 +1,27 @@
 import locale
-
 from kivy.clock import Clock
 from kivy.lang import Builder
-from kivy.properties import StringProperty, ListProperty, ObjectProperty
+from kivy.properties import StringProperty, ListProperty, ObjectProperty, BooleanProperty
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.recycleview import RecycleView
 from kivymd.app import MDApp
 from kivymd.theming import ThemableBehavior
 from kivymd.toast import toast
 from kivymd.uix.behaviors import TouchBehavior
-from kivymd.uix.card import MDCardSwipe
+from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.list import OneLineIconListItem, MDList
-from kivymd.uix.spinner import MDSpinner
 from data.model.model import Group
 from data.repository.db import *
 from data.repository.intel_repo import IntelRepository, menu_items
 
 
-class Spinner(MDSpinner):
-    state = StringProperty('start')
-
-
-class GenericListItem(MDCardSwipe, TouchBehavior):
+class GenericListItem(MDBoxLayout, TouchBehavior):
     selected = ObjectProperty()
     main_text = StringProperty()
     second_text = StringProperty()
     edit_callback = ObjectProperty()
     delete_callback = ObjectProperty()
+    checked = BooleanProperty(False)
 
     def edit_item(self):
         self.edit_callback(self.selected)
@@ -34,9 +30,7 @@ class GenericListItem(MDCardSwipe, TouchBehavior):
         self.delete_callback(self.selected)
 
     def on_double_tap(self, *args):
-        print(f'двойной клик на {self.selected}')
-        if self.state == 'closed':
-            self.open_card()
+        print(f'Состояние - {"выделено" if self.checked else "пропущено"}')
 
 
 class ContentNavigationDrawer(BoxLayout):
@@ -71,6 +65,11 @@ def on_delete(obj):
     toast(f'Предполагается удаление объекта {obj}', 1)
 
 
+class RVList(RecycleView):
+    def __init__(self, **kwargs):
+        super(RVList, self).__init__(**kwargs)
+
+
 class CommonList(MDApp):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -79,7 +78,7 @@ class CommonList(MDApp):
         self.repo = IntelRepository(self.db)
         self.screen = Builder.load_file('view/kivy/common_list.kv')
         self.screen_manager = self.screen.ids.screen_manager
-        self.spinner = Spinner()
+        self.data_list = self.screen.ids.container
 
     def build(self):
         return self.screen
@@ -93,9 +92,8 @@ class CommonList(MDApp):
         self.navigate(self.view)
 
     def loading(self):
-        self.root.ids.container.clear_widgets()
+        self.data_list.data = []
         self.root.ids.nav_drawer.set_state('close')
-        self.root.ids.container.add_widget(self.spinner)
 
     def navigate(self, view):
         self.view = view
@@ -113,11 +111,13 @@ class CommonList(MDApp):
         groups = self.repo.get_groups()
         self.root.ids.toolbar.title = self.view
         for group in groups:
-            self.root.ids.container.add_widget(
-                GenericListItem(selected=group, main_text=f"{group.group_name}", second_text=f"{group.ID}",
-                                edit_callback=on_group_edit, delete_callback=on_delete)
-            )
-        self.root.ids.container.remove_widget(self.spinner)
+            self.data_list.data.append({
+                'main_text': f"{group.group_name}",
+                'second_text': f"{group.ID}",
+                'selected': group,
+                'edit_callback': on_group_edit,
+                'delete_callback': on_delete
+            })
 
     def show_entities(self, dt):
         entities = self.repo.get_entities()
@@ -125,11 +125,13 @@ class CommonList(MDApp):
         for entity in entities:
             fullname = entity.get_fullname()
             label = entity.get_simple_line()
-            self.root.ids.container.add_widget(
-                GenericListItem(selected=entity, main_text=fullname, second_text=label,
-                                edit_callback=on_edit, delete_callback=on_delete)
-            )
-        self.root.ids.container.remove_widget(self.spinner)
+            self.data_list.data.append({
+                'main_text': fullname,
+                'second_text': label,
+                'selected': entity,
+                'edit_callback': on_edit,
+                'delete_callback': on_delete
+            })
 
     def show_annual_fees(self, dt):
         fees = self.repo.get_annual_fees()
@@ -138,8 +140,10 @@ class CommonList(MDApp):
         for fee in fees:
             first_line = f'{fee.code} пошлина за {fee.year} год = {locale.currency(fee.fee)}'
             fee_object = fee.object_type.name
-            self.root.ids.container.add_widget(
-                GenericListItem(selected=fee, main_text=first_line, second_text=fee_object,
-                                edit_callback=on_edit, delete_callback=on_delete)
-            )
-        self.root.ids.container.remove_widget(self.spinner)
+            self.data_list.data.append({
+                'main_text': first_line,
+                'second_text': fee_object,
+                'selected': fee,
+                'edit_callback': on_edit,
+                'delete_callback': on_delete
+            })

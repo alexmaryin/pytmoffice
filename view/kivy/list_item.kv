@@ -1,10 +1,17 @@
 <GenericListItem>:
-    size_hint_y: None
-    height: content.height
-    type_swipe: "hand"
+    adaptive_height: True
+    orientation: 'horizontal'
 
-    MDCardSwipeLayerBox:
-        padding: "8dp"
+    TwoLineListItem:
+        size_hint_x: .8
+        id: content
+        text: root.main_text
+        secondary_text: root.second_text
+
+    MDBoxLayout:
+        size_hint_x: .2
+        orientation: 'horizontal'
+        pos_hint: {'right': 1}
 
         MDIconButton:
             icon: "file-edit-outline"
@@ -16,10 +23,6 @@
             pos_hint: {"center_y": .5}
             on_release: root.delete_item()
 
-    MDCardSwipeFrontBox:
-
-        TwoLineListItem:
-            id: content
-            text: root.main_text
-            secondary_text: root.second_text
-            _no_ripple_effect: True
+        MDCheckbox:
+            pos_hint: {"center_y": .5}
+            on_active: root.checked = self.active

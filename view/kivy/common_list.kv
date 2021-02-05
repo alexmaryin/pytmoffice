@@ -1,6 +1,6 @@
 #:include view/kivy/nav_drawer/menu_item_drawer.kv
 #:include view/kivy/nav_drawer/navdrawer.kv
-#:include view/kivy/list_item.kv
+#:include view/kivy/rv_list.kv
 
 <Spinner>
     size_hint: None, None
@@ -21,16 +21,15 @@ Screen:
                         title: "пусто"
                         elevation: 10
                         left_action_items: [['menu', lambda x: nav_drawer.set_state("open")]]
+                        right_action_items: [['dots-vertical', lambda x: x]]
 
                     ScrollView:
-                        MDList:
+                        RVList:
                             id: container
             Screen:
                 name: 'loading_screen'
                 BoxLayout:
                     orientation: 'vertical'
-                AsyncImage:
-                    source: 'view/images/loading.gif'
 
         MDNavigationDrawer:
             id: nav_drawer
