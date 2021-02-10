@@ -1,6 +1,7 @@
 #:include view/kivy/nav_drawer/menu_item_drawer.kv
 #:include view/kivy/nav_drawer/navdrawer.kv
 #:include view/kivy/rv_list.kv
+#:include view/kivy/dialogs/edit_group.kv
 
 <Spinner>
     size_hint: None, None
@@ -21,7 +22,7 @@ Screen:
                         title: "пусто"
                         elevation: 10
                         left_action_items: [['menu', lambda x: nav_drawer.set_state("open")]]
-                        right_action_items: [['dots-vertical', lambda x: x]]
+                        right_action_items: [['dots-vertical', lambda x: x], ['plus-circle-outline', lambda x: app.add_item()]]
 
                     ScrollView:
                         RVList:

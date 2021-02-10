@@ -1,5 +1,4 @@
 import locale
-from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.properties import StringProperty, ListProperty, ObjectProperty, BooleanProperty
 from kivy.uix.boxlayout import BoxLayout
@@ -9,10 +8,12 @@ from kivymd.theming import ThemableBehavior
 from kivymd.toast import toast
 from kivymd.uix.behaviors import TouchBehavior
 from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.button import MDFlatButton
+from kivymd.uix.dialog import MDDialog
 from kivymd.uix.list import OneLineIconListItem, MDList
 from data.model.model import Group
 from data.repository.db import *
-from data.repository.intel_repo import IntelRepository, menu_items
+from data.repository.intel_repo import IntelRepository, menu_items, EntityCategory
 
 
 class GenericListItem(MDBoxLayout, TouchBehavior):
@@ -34,6 +35,10 @@ class GenericListItem(MDBoxLayout, TouchBehavior):
 
 
 class ContentNavigationDrawer(BoxLayout):
+    pass
+
+
+class GroupEditor(BoxLayout):
     pass
 
 
@@ -79,6 +84,12 @@ class CommonList(MDApp):
         self.screen = Builder.load_file('view/kivy/common_list.kv')
         self.screen_manager = self.screen.ids.screen_manager
         self.data_list = self.screen.ids.container
+        self.group_dialog = MDDialog(
+            title='Группа:',
+            type='custom',
+            content_cls=GroupEditor(),
+            buttons=[MDFlatButton(text='Отмена'), MDFlatButton(text='Записать')]
+        )
 
     def build(self):
         return self.screen
@@ -99,15 +110,23 @@ class CommonList(MDApp):
         self.view = view
         self.loading()
         if view == 'Группы':
-            Clock.schedule_once(self.show_groups, 1)
-        elif view == 'Владельцы':
-            Clock.schedule_once(self.show_entities, 1)
+            self.show_groups()
+        elif view == 'Физические лица':
+            self.show_entities(entity_type=EntityCategory.Persons)
+        elif view == 'Юридические лица':
+            self.show_entities(entity_type=EntityCategory.Legals)
         elif view == 'Пошлины':
-            Clock.schedule_once(self.show_annual_fees, 1)
+            self.show_annual_fees()
         else:
             toast('Пока не реализовано')
 
-    def show_groups(self, dt):
+    def add_item(self):
+        if self.view == 'Группы':
+            self.group_dialog.open()
+        else:
+            toast('Пока не реализовано')
+
+    def show_groups(self):
         groups = self.repo.get_groups()
         self.root.ids.toolbar.title = self.view
         for group in groups:
@@ -119,8 +138,8 @@ class CommonList(MDApp):
                 'delete_callback': on_delete
             })
 
-    def show_entities(self, dt):
-        entities = self.repo.get_entities()
+    def show_entities(self, entity_type):
+        entities = self.repo.get_entities(category=entity_type)
         self.root.ids.toolbar.title = self.view
         for entity in entities:
             fullname = entity.get_fullname()
@@ -133,12 +152,11 @@ class CommonList(MDApp):
                 'delete_callback': on_delete
             })
 
-    def show_annual_fees(self, dt):
+    def show_annual_fees(self):
         fees = self.repo.get_annual_fees()
         self.root.ids.toolbar.title = self.view
-        locale.setlocale(locale.LC_ALL, 'ru_RU')
         for fee in fees:
-            first_line = f'{fee.code} пошлина за {fee.year} год = {locale.currency(fee.fee)}'
+            first_line = f'{fee.code} пошлина за {fee.year} год = {fee.fee} ₽'
             fee_object = fee.object_type.name
             self.data_list.data.append({
                 'main_text': first_line,
