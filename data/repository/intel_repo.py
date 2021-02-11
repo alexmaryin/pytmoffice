@@ -1,5 +1,6 @@
 from enum import Enum
 
+from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import with_polymorphic
 from data.model.model import *
 
@@ -31,6 +32,23 @@ class IntelRepository:
             return self.source.query(Group).filter(Group.group_name.like(f'%{filter_query}%')).order_by(Group.group_name).all()
         else:
             return self.source.query(Group).order_by(Group.ID).all()
+
+    def add_group(self, name):
+        try:
+            new_group = Group(group_name=name)
+            self.source.add(new_group)
+            self.source.commit()
+        except DBAPIError as e:
+            self.source.rollback()
+            raise e
+
+    def delete_group(self, group):
+        try:
+            self.source.delete(group)
+            self.source.commit()
+        except DBAPIError as e:
+            self.source.rollback()
+            raise e
 
     def get_entities(self, filter_query='', category=EntityCategory.All) -> list[Entity]:
         entities_for_query = {

@@ -1,4 +1,3 @@
-import locale
 from kivy.lang import Builder
 from kivy.properties import StringProperty, ListProperty, ObjectProperty, BooleanProperty
 from kivy.uix.boxlayout import BoxLayout
@@ -14,6 +13,7 @@ from kivymd.uix.list import OneLineIconListItem, MDList
 from data.model.model import Group
 from data.repository.db import *
 from data.repository.intel_repo import IntelRepository, menu_items, EntityCategory
+from view.common_confirmation import ConfirmDialog
 
 
 class GenericListItem(MDBoxLayout, TouchBehavior):
@@ -62,10 +62,6 @@ def on_edit(obj):
     pass
 
 
-def on_group_edit(group: Group):
-    toast(f'Здесь будет редактирование группы {group.group_name}', 1)
-
-
 def on_delete(obj):
     toast(f'Предполагается удаление объекта {obj}', 1)
 
@@ -84,12 +80,20 @@ class CommonList(MDApp):
         self.screen = Builder.load_file('view/kivy/common_list.kv')
         self.screen_manager = self.screen.ids.screen_manager
         self.data_list = self.screen.ids.container
+
         self.group_dialog = MDDialog(
             title='Группа:',
             type='custom',
             content_cls=GroupEditor(),
-            buttons=[MDFlatButton(text='Отмена'), MDFlatButton(text='Записать')]
+            buttons=[
+                MDFlatButton(text='Отмена', on_release=self.close_group_dialog),
+                MDFlatButton(text='Записать', on_release=self.add_group)]
         )
+        self.group_dialog.set_normal_height()
+
+    def close_group_dialog(self, instance):
+        self.group_dialog.content_cls.name_property = ''
+        self.group_dialog.dismiss()
 
     def build(self):
         return self.screen
@@ -123,8 +127,32 @@ class CommonList(MDApp):
     def add_item(self):
         if self.view == 'Группы':
             self.group_dialog.open()
-        else:
-            toast('Пока не реализовано')
+
+    def add_group(self, instance):
+        try:
+            new = self.group_dialog.content_cls.name_property
+            self.repo.add_group(new)
+            self.group_dialog.content_cls.name_property = ''
+            self.group_dialog.dismiss()
+            toast(f'Создана новая группа {new}')
+            self.navigate(self.view)
+        except DBAPIError:
+            toast('Группа с таким наименованием уже есть')
+
+    def on_group_edit(self, group: Group):
+        toast(f'Здесь будет редактирование группы {group.group_name}', 1)
+
+    def on_group_delete(self, group: Group):
+        ConfirmDialog(f'Удалить группу {group.group_name}?', self.confirmed_delete_group, group)
+
+    def confirmed_delete_group(self, group: Group):
+        try:
+            name = group.group_name
+            self.repo.delete_group(group)
+            toast(f'Группа {name} удалена!')
+            self.navigate(self.view)
+        except DBAPIError:
+            toast('Удаление невозможно из-за нарушения целостности данных.')
 
     def show_groups(self):
         groups = self.repo.get_groups()
@@ -134,8 +162,8 @@ class CommonList(MDApp):
                 'main_text': f"{group.group_name}",
                 'second_text': f"{group.ID}",
                 'selected': group,
-                'edit_callback': on_group_edit,
-                'delete_callback': on_delete
+                'edit_callback': self.on_group_edit,
+                'delete_callback': self.on_group_delete
             })
 
     def show_entities(self, entity_type):
