@@ -79,7 +79,7 @@ class GroupViewModel:
             self.refresh_view("Группы")
         toast(result_text)
 
-    def show_groups(self) -> list:
+    def show_items(self) -> list:
         groups = self.repo.get_groups()
         data_dict = []
         for group in groups:

@@ -10,6 +10,7 @@ from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.list import OneLineIconListItem, MDList
 from data.repository.db import *
 from data.repository.intel_repo import IntelRepository, menu_items, EntityCategory
+from view.view_models.categories_view_model import CategoryViewModel
 from view.view_models.group_view_model import GroupViewModel
 
 
@@ -74,8 +75,9 @@ class CommonList(MDApp):
         self.repo = IntelRepository(self.db)
         self.screen = Builder.load_file('view/kivy/common_list.kv')
         self.screen_manager = self.screen.ids.screen_manager
-        # self.data_list = self.screen.ids.container
-        self.groups_view_model = GroupViewModel(self.repo, self.navigate)
+        self.active_view_model = GroupViewModel(self.repo, self.navigate)
+        # self.groups_view_model = GroupViewModel(self.repo, self.navigate)
+        # self.categories_view_model = CategoryViewModel(self.repo, self.navigate)
 
     def build(self):
         return self.screen
@@ -104,19 +106,27 @@ class CommonList(MDApp):
         self.root.ids.toolbar.title = self.view
         self.loading()
         if view == 'Группы':
-            self.data = self.groups_view_model.show_groups()
+            self.active_view_model = GroupViewModel(self.repo, self.navigate)
+        elif view == 'Типы объектов':
+            self.active_view_model = CategoryViewModel(self.repo, self.navigate)
         elif view == 'Физические лица':
             self.show_entities(entity_type=EntityCategory.Persons)
+            self.active_view_model = None
         elif view == 'Юридические лица':
             self.show_entities(entity_type=EntityCategory.Legals)
+            self.active_view_model = None
         elif view == 'Пошлины':
             self.show_annual_fees()
+            self.active_view_model = None
         else:
+            self.active_view_model = None
             toast('Пока не реализовано')
+        if self.active_view_model:
+            self.data = self.active_view_model.show_items()
 
     def add_item(self):
-        if self.view == 'Группы':
-            self.groups_view_model.on_add_enter()
+        if self.active_view_model:
+            self.active_view_model.on_add_enter()
         else:
             toast('Пока не реализовано')
 
