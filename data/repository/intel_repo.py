@@ -3,6 +3,7 @@ from enum import Enum
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import with_polymorphic
 from data.model.model import *
+from data.repository.result import Result
 
 menu_items = [{"name": "Группы", "icon": "folder"},
               {"name": "Счета", "icon": "folder"},
@@ -33,22 +34,24 @@ class IntelRepository:
         else:
             return self.source.query(Group).order_by(Group.ID).all()
 
-    def add_group(self, name):
+    def add_group(self, name) -> (Result, str):
         try:
             new_group = Group(group_name=name)
             self.source.add(new_group)
             self.source.commit()
-        except DBAPIError as e:
+            return Result.SUCCESS, f'Создана новая группа {name}'
+        except DBAPIError:
             self.source.rollback()
-            raise e
+            return Result.ERROR, 'Группа с таким наименованием уже есть'
 
-    def delete_group(self, group):
+    def delete_group(self, group) -> (Result, str):
         try:
             self.source.delete(group)
             self.source.commit()
-        except DBAPIError as e:
+            return Result.SUCCESS, f'Группа {group.group_name} удалена!'
+        except DBAPIError:
             self.source.rollback()
-            raise e
+            return Result.ERROR, 'Удаление невозможно из-за нарушения целостности данных.'
 
     def get_entities(self, filter_query='', category=EntityCategory.All) -> list[Entity]:
         entities_for_query = {

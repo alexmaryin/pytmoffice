@@ -7,13 +7,10 @@ from kivymd.theming import ThemableBehavior
 from kivymd.toast import toast
 from kivymd.uix.behaviors import TouchBehavior
 from kivymd.uix.boxlayout import MDBoxLayout
-from kivymd.uix.button import MDFlatButton
-from kivymd.uix.dialog import MDDialog
 from kivymd.uix.list import OneLineIconListItem, MDList
-from data.model.model import Group
 from data.repository.db import *
 from data.repository.intel_repo import IntelRepository, menu_items, EntityCategory
-from view.common_confirmation import ConfirmDialog
+from view.view_models.group_view_model import GroupViewModel
 
 
 class GenericListItem(MDBoxLayout, TouchBehavior):
@@ -22,7 +19,6 @@ class GenericListItem(MDBoxLayout, TouchBehavior):
     second_text = StringProperty()
     edit_callback = ObjectProperty()
     delete_callback = ObjectProperty()
-    checked = BooleanProperty(False)
 
     def edit_item(self):
         self.edit_callback(self.selected)
@@ -35,10 +31,6 @@ class GenericListItem(MDBoxLayout, TouchBehavior):
 
 
 class ContentNavigationDrawer(BoxLayout):
-    pass
-
-
-class GroupEditor(BoxLayout):
     pass
 
 
@@ -72,6 +64,9 @@ class RVList(RecycleView):
 
 
 class CommonList(MDApp):
+    data = ListProperty()
+    current_selection = ListProperty([])
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.view = menu_items[0]['name']
@@ -79,24 +74,17 @@ class CommonList(MDApp):
         self.repo = IntelRepository(self.db)
         self.screen = Builder.load_file('view/kivy/common_list.kv')
         self.screen_manager = self.screen.ids.screen_manager
-        self.data_list = self.screen.ids.container
-
-        self.group_dialog = MDDialog(
-            title='Группа:',
-            type='custom',
-            content_cls=GroupEditor(),
-            buttons=[
-                MDFlatButton(text='Отмена', on_release=self.close_group_dialog),
-                MDFlatButton(text='Записать', on_release=self.add_group)]
-        )
-        self.group_dialog.set_normal_height()
-
-    def close_group_dialog(self, instance):
-        self.group_dialog.content_cls.name_property = ''
-        self.group_dialog.dismiss()
+        # self.data_list = self.screen.ids.container
+        self.groups_view_model = GroupViewModel(self.repo, self.navigate)
 
     def build(self):
         return self.screen
+
+    def select_row(self, rv_key, active):
+        if active and rv_key not in self.current_selection:
+            self.current_selection.append(rv_key)
+        elif not active and rv_key in self.current_selection:
+            self.current_selection.remove(rv_key)
 
     def on_start(self):
         """Bind menu items from dict"""
@@ -107,14 +95,16 @@ class CommonList(MDApp):
         self.navigate(self.view)
 
     def loading(self):
-        self.data_list.data = []
+        self.data = []
+        self.current_selection = []
         self.root.ids.nav_drawer.set_state('close')
 
     def navigate(self, view):
         self.view = view
+        self.root.ids.toolbar.title = self.view
         self.loading()
         if view == 'Группы':
-            self.show_groups()
+            self.data = self.groups_view_model.show_groups()
         elif view == 'Физические лица':
             self.show_entities(entity_type=EntityCategory.Persons)
         elif view == 'Юридические лица':
@@ -126,45 +116,7 @@ class CommonList(MDApp):
 
     def add_item(self):
         if self.view == 'Группы':
-            self.group_dialog.open()
-
-    def add_group(self, instance):
-        try:
-            new = self.group_dialog.content_cls.name_property
-            self.repo.add_group(new)
-            self.group_dialog.content_cls.name_property = ''
-            self.group_dialog.dismiss()
-            toast(f'Создана новая группа {new}')
-            self.navigate(self.view)
-        except DBAPIError:
-            toast('Группа с таким наименованием уже есть')
-
-    def on_group_edit(self, group: Group):
-        toast(f'Здесь будет редактирование группы {group.group_name}', 1)
-
-    def on_group_delete(self, group: Group):
-        ConfirmDialog(f'Удалить группу {group.group_name}?', self.confirmed_delete_group, group)
-
-    def confirmed_delete_group(self, group: Group):
-        try:
-            name = group.group_name
-            self.repo.delete_group(group)
-            toast(f'Группа {name} удалена!')
-            self.navigate(self.view)
-        except DBAPIError:
-            toast('Удаление невозможно из-за нарушения целостности данных.')
-
-    def show_groups(self):
-        groups = self.repo.get_groups()
-        self.root.ids.toolbar.title = self.view
-        for group in groups:
-            self.data_list.data.append({
-                'main_text': f"{group.group_name}",
-                'second_text': f"{group.ID}",
-                'selected': group,
-                'edit_callback': self.on_group_edit,
-                'delete_callback': self.on_group_delete
-            })
+            self.groups_view_model.open_dialog()
 
     def show_entities(self, entity_type):
         entities = self.repo.get_entities(category=entity_type)
@@ -172,10 +124,11 @@ class CommonList(MDApp):
         for entity in entities:
             fullname = entity.get_fullname()
             label = entity.get_simple_line()
-            self.data_list.data.append({
+            self.data.append({
                 'main_text': fullname,
                 'second_text': label,
                 'selected': entity,
+                'rv_key': entity.id,
                 'edit_callback': on_edit,
                 'delete_callback': on_delete
             })
@@ -186,10 +139,11 @@ class CommonList(MDApp):
         for fee in fees:
             first_line = f'{fee.code} пошлина за {fee.year} год = {fee.fee} ₽'
             fee_object = fee.object_type.name
-            self.data_list.data.append({
+            self.data.append({
                 'main_text': first_line,
                 'second_text': fee_object,
                 'selected': fee,
+                'rv_key': fee.id,
                 'edit_callback': on_edit,
                 'delete_callback': on_delete
             })
