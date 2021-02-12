@@ -116,7 +116,9 @@ class CommonList(MDApp):
 
     def add_item(self):
         if self.view == 'Группы':
-            self.groups_view_model.open_dialog()
+            self.groups_view_model.on_add_enter()
+        else:
+            toast('Пока не реализовано')
 
     def show_entities(self, entity_type):
         entities = self.repo.get_entities(category=entity_type)

@@ -8,30 +8,35 @@ from data.repository.result import Result
 
 
 class GroupEditor(BoxLayout):
-    pass
+    def __init__(self, cancel_callback, ok_callback, **kwargs):
+        super().__init__(**kwargs)
+        self.cancel_callback = cancel_callback
+        self.ok_callback = ok_callback
+        self.group = None
 
 
 class GroupViewModel:
     def __init__(self, repository, refresh_view_callback):
         self.repo = repository
         self.refresh_view = refresh_view_callback
+        self.editor = None
+        self.group_dialog = None
 
-        self.group_dialog = MDDialog(
+    def create_dialog(self):
+        return MDDialog(
             title='Группа:',
             type='custom',
-            content_cls=GroupEditor(),
+            content_cls=self.editor,
             buttons=[
-                MDFlatButton(text='Отмена', on_release=self.close_dialog),
-                MDFlatButton(text='Записать', on_release=self.add)]
+                MDFlatButton(text='Отмена', on_release=self.editor.cancel_callback),
+                MDFlatButton(text='Записать', on_release=self.editor.ok_callback)]
         )
-        self.group_dialog.set_normal_height()
-
-    def open_dialog(self):
-        self.group_dialog.open()
 
     def close_dialog(self, instance):
         self.group_dialog.content_cls.name_property = ''
         self.group_dialog.dismiss()
+        self.group_dialog = None
+        self.editor = None
 
     def add(self, instance):
         new = self.group_dialog.content_cls.name_property
@@ -42,13 +47,33 @@ class GroupViewModel:
             self.refresh_view("Группы")
         toast(result_text)
 
+    def on_add_enter(self):
+        self.editor = GroupEditor(self.close_dialog, self.add)
+        self.group_dialog = self.create_dialog()
+        self.group_dialog.set_normal_height()
+        self.group_dialog.open()
+
+    def edit(self, instance):
+        self.editor.group.group_name = self.group_dialog.content_cls.name_property
+        result, result_text = self.repo.edit_group(self.editor.group)
+        if result == Result.SUCCESS:
+            self.group_dialog.content_cls.name_property = ''
+            self.group_dialog.dismiss()
+            self.refresh_view("Группы")
+        toast(result_text)
+
+    def on_edit_enter(self, group: Group):
+        self.editor = GroupEditor(self.close_dialog, self.edit)
+        self.editor.group = group
+        self.group_dialog = self.create_dialog()
+        self.group_dialog.content_cls.name_property = group.group_name
+        self.group_dialog.set_normal_height()
+        self.group_dialog.open()
+
     def on_delete_enter(self, group: Group):
         ConfirmDialog(f'Удалить группу {group.group_name}?', self.confirmed_delete, group)
 
-    def on_edit_enter(self, group: Group):
-        toast(f'Здесь будет редактирование группы {group.group_name}', 1)
-
-    def confirmed_delete(self, group: Group):
+    def confirmed_delete(self, group):
         result, result_text = self.repo.delete_group(group)
         if result == Result.SUCCESS:
             self.refresh_view("Группы")

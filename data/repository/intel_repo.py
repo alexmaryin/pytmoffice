@@ -44,6 +44,17 @@ class IntelRepository:
             self.source.rollback()
             return Result.ERROR, 'Группа с таким наименованием уже есть'
 
+    def edit_group(self, group) -> (Result, str):
+        try:
+            if group in self.source.dirty:
+                self.source.flush()
+                return Result.SUCCESS, f'Группа {group.group_name} обновлена'
+            else:
+                return Result.EMPTY, 'Никаких изменений'
+        except DBAPIError:
+            self.source.rollback()
+            return Result.ERROR, 'Скорее всего группа с таким наименованием уже есть'
+
     def delete_group(self, group) -> (Result, str):
         try:
             self.source.delete(group)

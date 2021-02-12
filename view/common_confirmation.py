@@ -10,8 +10,8 @@ class ConfirmDialog(MDDialog):
                              MDFlatButton(text="Нет", on_release=self.set_cancel),
                              MDRaisedButton(text="Да", on_release=self.set_confirmation)])
         self.confirmed_action = confirmed_callback
-        self.obj = obj
         self.type = "confirmation"
+        self.obj = obj
         self.set_normal_height()
         self.open()
 
