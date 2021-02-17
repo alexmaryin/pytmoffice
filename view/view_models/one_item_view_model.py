@@ -4,7 +4,7 @@ from kivymd.uix.button import MDFlatButton
 from kivymd.uix.dialog import MDDialog
 
 
-class ItemEditor(BoxLayout):
+class OneItemEditor(BoxLayout):
     hint_property = StringProperty()
 
     def __init__(self, cancel_callback, ok_callback, hint, **kwargs):
@@ -15,7 +15,7 @@ class ItemEditor(BoxLayout):
         self.hint_property = hint
 
 
-class AbstractViewModel:
+class OneItemViewModel:
     def __init__(self, repository, refresh_view_callback, dialog_title, view, hint_dialog):
         self.repo = repository
         self.refresh_view = refresh_view_callback
@@ -43,13 +43,13 @@ class AbstractViewModel:
         self.editor = None
 
     def add_dialog_enter(self, add_callback):
-        self.editor = ItemEditor(self.close_dialog, add_callback, self.hint_dialog)
+        self.editor = OneItemEditor(self.close_dialog, add_callback, self.hint_dialog)
         self.editor_dialog = self.create_dialog()
         self.editor_dialog.set_normal_height()
         self.editor_dialog.open()
 
     def edit_dialog_enter(self, item, item_property, edit_callback):
-        self.editor = ItemEditor(self.close_dialog, edit_callback, self.hint_dialog)
+        self.editor = OneItemEditor(self.close_dialog, edit_callback, self.hint_dialog)
         self.editor.item = item
         self.editor_dialog = self.create_dialog()
         self.editor_dialog.content_cls.name_property = item_property

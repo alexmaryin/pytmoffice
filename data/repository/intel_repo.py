@@ -1,9 +1,8 @@
 from enum import Enum
-
-from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import with_polymorphic
 from data.model.model import *
-from data.repository.result import Result
+from .common_repo import CommonRepository
+from .result import Result
 
 menu_items = [{"name": "Группы", "icon": "folder"},
               {"name": "Счета", "icon": "folder"},
@@ -24,9 +23,9 @@ class EntityCategory(Enum):
     Legals = 2
 
 
-class IntelRepository:
+class IntelRepository(CommonRepository):
     def __init__(self, database):
-        self.source = database.session
+        super(IntelRepository, self).__init__(database)
 
         # Groups CRUD methods
 
@@ -37,34 +36,22 @@ class IntelRepository:
             return self.source.query(Group).order_by(Group.ID).all()
 
     def add_group(self, name) -> (Result, str):
-        try:
-            new_group = Group(group_name=name)
-            self.source.add(new_group)
-            self.source.commit()
-            return Result.SUCCESS, f'Создана новая группа {name}'
-        except DBAPIError:
-            self.source.rollback()
-            return Result.ERROR, 'Группа с таким наименованием уже есть'
+        new_group = Group(group_name=name)
+        return self.common_add_item(
+            item=new_group,
+            override_success=f'Создана новая группа {name}',
+            override_error='Группа с таким наименованием уже есть')
 
     def edit_group(self, group) -> (Result, str):
-        try:
-            if group in self.source.dirty:
-                self.source.flush()
-                return Result.SUCCESS, f'Группа {group.group_name} обновлена'
-            else:
-                return Result.EMPTY, 'Никаких изменений'
-        except DBAPIError:
-            self.source.rollback()
-            return Result.ERROR, 'Скорее всего группа с таким наименованием уже есть'
+        return self.common_edit_item(
+            item=group,
+            override_success=f'Группа {group.group_name} обновлена',
+            override_error='Скорее всего группа с таким наименованием уже есть')
 
     def delete_group(self, group) -> (Result, str):
-        try:
-            self.source.delete(group)
-            self.source.commit()
-            return Result.SUCCESS, f'Группа {group.group_name} удалена!'
-        except DBAPIError:
-            self.source.rollback()
-            return Result.ERROR, 'Удаление невозможно из-за нарушения целостности данных.'
+        return self.common_delete_item(
+            item=group,
+            override_success=f'Группа {group.group_name} удалена!')
 
         # Entities CRUD methods
 
@@ -90,31 +77,34 @@ class IntelRepository:
         return self.source.query(ObjectType).order_by(ObjectType.id).all()
 
     def add_category(self, new_type) -> (Result, str):
-        try:
-            new = ObjectType(name=new_type)
-            self.source.add(new)
-            self.source.commit()
-            return Result.SUCCESS, f'Создан новый тип объектов интеллектуальной собственности {new_type}'
-        except DBAPIError:
-            self.source.rollback()
-            return Result.ERROR, 'Тип объектов с таким наименованием уже есть'
+        new = ObjectType(name=new_type)
+        return self.common_add_item(
+            item=new,
+            override_success=f'Создан новый тип объектов интеллектуальной собственности {new_type}',
+            override_error='Тип объектов с таким наименованием уже есть')
 
     def edit_category(self, category) -> (Result, str):
-        try:
-            if category in self.source.dirty:
-                self.source.flush()
-                return Result.SUCCESS, f'Тип объектов {category.name} обновлен'
-            else:
-                return Result.EMPTY, 'Никаких изменений'
-        except DBAPIError:
-            self.source.rollback()
-            return Result.ERROR, 'Скорее всего тип объектов с таким наименованием уже есть'
+        return self.common_edit_item(
+            item=category,
+            override_success=f'Тип объектов {category.name} обновлен',
+            override_error='Скорее всего тип объектов с таким наименованием уже есть')
 
     def delete_category(self, category) -> (Result, str):
-        try:
-            self.source.delete(category)
-            self.source.commit()
-            return Result.SUCCESS, f'Тип объектов интеллектуальной собственности {category.name} удален!'
-        except DBAPIError:
-            self.source.rollback()
-            return Result.ERROR, 'Удаление невозможно из-за нарушения целостности данных.'
+        return self.common_delete_item(
+            item=category,
+            override_success=f'Тип объектов интеллектуальной собственности {category.name} удален!')
+
+        # Positions CRUD methods
+
+    def get_positions(self) -> list[Position]:
+        return self.source.query(Position).order_by(Position.position).all()
+
+    def add_position(self, position_name) -> (Result, str):
+        new = Position(position=position_name)
+        return self.common_add_item(item=new)
+
+    def edit_position(self, position) -> (Result, str):
+        return self.common_edit_item(item=position)
+
+    def delete_position(self, position) -> (Result, str):
+        return self.common_delete_item(item=position)

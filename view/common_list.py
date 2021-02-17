@@ -11,7 +11,8 @@ from kivymd.uix.list import OneLineIconListItem, MDList
 from data.repository.db import *
 from data.repository.intel_repo import IntelRepository, menu_items, EntityCategory
 from view.view_models.categories_view_model import CategoryViewModel
-from view.view_models.group_view_model import GroupViewModel
+from view.view_models.groups_view_model import GroupViewModel
+from view.view_models.positions_view_model import PositionViewModel
 
 
 class GenericListItem(MDBoxLayout, TouchBehavior):
@@ -76,8 +77,6 @@ class CommonList(MDApp):
         self.screen = Builder.load_file('view/kivy/common_list.kv')
         self.screen_manager = self.screen.ids.screen_manager
         self.active_view_model = GroupViewModel(self.repo, self.navigate)
-        # self.groups_view_model = GroupViewModel(self.repo, self.navigate)
-        # self.categories_view_model = CategoryViewModel(self.repo, self.navigate)
 
     def build(self):
         return self.screen
@@ -109,6 +108,8 @@ class CommonList(MDApp):
             self.active_view_model = GroupViewModel(self.repo, self.navigate)
         elif view == 'Типы объектов':
             self.active_view_model = CategoryViewModel(self.repo, self.navigate)
+        elif view == 'Должности':
+            self.active_view_model = PositionViewModel(self.repo, self.navigate)
         elif view == 'Физические лица':
             self.show_entities(entity_type=EntityCategory.Persons)
             self.active_view_model = None

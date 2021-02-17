@@ -2,10 +2,10 @@ from kivymd.toast import toast
 from data.model.model import ObjectType
 from data.repository.result import Result
 from view.common_confirmation import ConfirmDialog
-from view.view_models.abstract_view_model import AbstractViewModel
+from view.view_models.one_item_view_model import OneItemViewModel
 
 
-class CategoryViewModel(AbstractViewModel):
+class CategoryViewModel(OneItemViewModel):
     def __init__(self, repository, refresh_view_callback):
         super().__init__(
             repository,

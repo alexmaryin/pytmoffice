@@ -2,10 +2,10 @@ from kivymd.toast import toast
 from data.model.model import Group
 from data.repository.result import Result
 from view.common_confirmation import ConfirmDialog
-from view.view_models.abstract_view_model import AbstractViewModel
+from view.view_models.one_item_view_model import OneItemViewModel
 
 
-class GroupViewModel(AbstractViewModel):
+class GroupViewModel(OneItemViewModel):
     def __init__(self, repository, refresh_view_callback):
         super().__init__(
             repository,
