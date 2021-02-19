@@ -49,7 +49,7 @@ class GroupViewModel(OneItemViewModel):
             self.refresh_view("Группы")
         toast(result_text)
 
-    def show_items(self) -> list:
+    def show_items(self) -> list[dict]:
         groups = self.repo.get_groups()
         data_dict = []
         for group in groups:

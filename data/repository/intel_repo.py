@@ -108,3 +108,18 @@ class IntelRepository(CommonRepository):
 
     def delete_position(self, position) -> (Result, str):
         return self.common_delete_item(item=position)
+
+        # NICE CRUD methods
+
+    def get_nice_data(self) -> list[NiceData]:
+        return self.source.query(NiceData).order_by(NiceData.class_number, NiceData.description).all()
+
+    def add_nice_data(self, class_number, description) -> (Result, str):
+        new = NiceData(class_number=class_number, description=description)
+        return self.common_add_item(item=new)
+
+    def edit_nice_data(self, nice_data) -> (Result, str):
+        return self.common_edit_item(item=nice_data)
+
+    def delete_nice_data(self, nice_data) -> (Result, str):
+        return self.common_delete_item(item=nice_data)

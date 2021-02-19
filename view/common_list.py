@@ -1,5 +1,6 @@
 from kivy.lang import Builder
 from kivy.properties import StringProperty, ListProperty, ObjectProperty, BooleanProperty
+from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.recycleview import RecycleView
 from kivymd.app import MDApp
@@ -9,13 +10,14 @@ from kivymd.uix.behaviors import TouchBehavior
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.list import OneLineIconListItem, MDList
 from data.repository.db import *
-from data.repository.intel_repo import IntelRepository, menu_items, EntityCategory
+from data.repository.intel_repo import IntelRepository, menu_items
 from view.view_models.categories_view_model import CategoryViewModel
 from view.view_models.groups_view_model import GroupViewModel
+from view.view_models.nice_data_view_model import NiceDataViewModel
 from view.view_models.positions_view_model import PositionViewModel
 
 
-class GenericListItem(MDBoxLayout, TouchBehavior):
+class GenericListItem(MDBoxLayout):
     selected = ObjectProperty()
     main_text = StringProperty()
     second_text = StringProperty()
@@ -27,9 +29,6 @@ class GenericListItem(MDBoxLayout, TouchBehavior):
 
     def delete_item(self):
         self.delete_callback(self.selected)
-
-    def on_double_tap(self, *args):
-        print(f'Состояние - {"выделено" if self.checked else "пропущено"}')
 
 
 class ContentNavigationDrawer(BoxLayout):
@@ -52,15 +51,9 @@ class DrawerList(ThemableBehavior, MDList):
         app.navigate(instance_item.text)
 
 
-def on_edit(obj):
-    pass
-
-
-def on_delete(obj):
-    toast(f'Предполагается удаление объекта {obj}', 1)
-
-
 class RVList(RecycleView):
+    view_class = ObjectProperty(GenericListItem)
+
     def __init__(self, **kwargs):
         super(RVList, self).__init__(**kwargs)
 
@@ -75,7 +68,7 @@ class CommonList(MDApp):
         self.db = DataBaseConnection()
         self.repo = IntelRepository(self.db)
         self.screen = Builder.load_file('view/kivy/common_list.kv')
-        self.screen_manager = self.screen.ids.screen_manager
+        self.container = self.screen.ids.container
         self.active_view_model = GroupViewModel(self.repo, self.navigate)
 
     def build(self):
@@ -110,19 +103,14 @@ class CommonList(MDApp):
             self.active_view_model = CategoryViewModel(self.repo, self.navigate)
         elif view == 'Должности':
             self.active_view_model = PositionViewModel(self.repo, self.navigate)
-        elif view == 'Физические лица':
-            self.show_entities(entity_type=EntityCategory.Persons)
-            self.active_view_model = None
-        elif view == 'Юридические лица':
-            self.show_entities(entity_type=EntityCategory.Legals)
-            self.active_view_model = None
-        elif view == 'Пошлины':
-            self.show_annual_fees()
-            self.active_view_model = None
+        elif view == 'МКТУ':
+            self.active_view_model = NiceDataViewModel(self.repo, self.navigate)
         else:
             self.active_view_model = None
             toast('Пока не реализовано')
         if self.active_view_model:
+            self.container.view_class = self.active_view_model.view_class or GenericListItem
+            print(f'Элементы recyclerview класса {self.container.view_class}')
             self.data = self.active_view_model.show_items()
 
     def add_item(self):
@@ -130,33 +118,3 @@ class CommonList(MDApp):
             self.active_view_model.on_add_enter()
         else:
             toast('Пока не реализовано')
-
-    def show_entities(self, entity_type):
-        entities = self.repo.get_entities(category=entity_type)
-        self.root.ids.toolbar.title = self.view
-        for entity in entities:
-            fullname = entity.get_fullname()
-            label = entity.get_simple_line()
-            self.data.append({
-                'main_text': fullname,
-                'second_text': label,
-                'selected': entity,
-                'rv_key': entity.id,
-                'edit_callback': on_edit,
-                'delete_callback': on_delete
-            })
-
-    def show_annual_fees(self):
-        fees = self.repo.get_annual_fees()
-        self.root.ids.toolbar.title = self.view
-        for fee in fees:
-            first_line = f'{fee.code} пошлина за {fee.year} год = {fee.fee} ₽'
-            fee_object = fee.object_type.name
-            self.data.append({
-                'main_text': first_line,
-                'second_text': fee_object,
-                'selected': fee,
-                'rv_key': fee.id,
-                'edit_callback': on_edit,
-                'delete_callback': on_delete
-            })

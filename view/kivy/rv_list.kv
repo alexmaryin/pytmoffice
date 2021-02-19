@@ -1,7 +1,8 @@
 #:include view/kivy/list_item.kv
+#:include view/kivy/nice_list_item.kv
 
 <RVList>:
-    viewclass: 'GenericListItem'
+    viewclass: self.view_class
     data: app.data
     RecycleBoxLayout:
         default_size: None, None

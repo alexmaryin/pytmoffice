@@ -24,6 +24,7 @@ class OneItemViewModel:
         self.dialog_title = dialog_title
         self.view = view
         self.hint_dialog = hint_dialog
+        self.view_class = None
 
     def create_dialog(self):
         if self.editor:
@@ -56,5 +57,5 @@ class OneItemViewModel:
         self.editor_dialog.set_normal_height()
         self.editor_dialog.open()
 
-    def show_items(self) -> list:
+    def show_items(self) -> list[dict]:
         return []

@@ -1,0 +1,16 @@
+<NiceClassViewer>
+    orientation: "vertical"
+    spacing: "12dp"
+    size_hint_y: None
+    height: "120dp"
+
+    ScrollView:
+        do_scroll_x: False
+        do_scroll_y: True
+
+        Label:
+            size_hint_y: None
+            height: self.texture_size[1]
+            text_size: self.width, None
+            padding: 10, 10
+            text: root.description_text
