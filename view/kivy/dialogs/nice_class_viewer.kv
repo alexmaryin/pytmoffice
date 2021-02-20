@@ -1,8 +1,9 @@
-<NiceClassViewer>
-    orientation: "horizontal"
-    spacing: "5dp"
-    height: 400
+<ClassListItem>:
+    on_release: root.select_class(self.text)
 
+<NiceClassViewer>:
+    orientation: "horizontal"
+    height: 400
     label: description_label
 
     ScrollView:

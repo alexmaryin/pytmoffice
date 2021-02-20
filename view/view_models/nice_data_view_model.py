@@ -1,16 +1,24 @@
 from kivy.core.clipboard import Clipboard
-from kivy.properties import ObjectProperty, StringProperty
+from kivy.properties import ObjectProperty, StringProperty, NumericProperty, ListProperty
 from kivy.uix.behaviors import ButtonBehavior
 from kivymd.toast import toast
 from kivymd.uix.behaviors import TouchBehavior, RectangularRippleBehavior, BackgroundColorBehavior
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.dialog import MDDialog
+from kivymd.uix.label import MDLabel
+
+
+class ClassListItem(MDLabel):
+    pass
 
 
 class NiceClassViewer(MDBoxLayout):
     label = ObjectProperty()
+    class_selector = ObjectProperty()
     description_property = StringProperty()
     selected_text = StringProperty()
+    class_property = NumericProperty()
+    classes_list = ListProperty([x for x in range(1, 46)])
 
     def copy_text(self, copy_all=False):
         if self.selected_text != "" or copy_all:
@@ -36,7 +44,9 @@ class NiceDataListItem(MDBoxLayout, TouchBehavior, RectangularRippleBehavior, Bu
             title=f"{self.class_number_text} класс МКТУ:",
             type="custom",
             size_hint_x=0.8,
-            content_cls=NiceClassViewer(description_property=self.description_text)
+            content_cls=NiceClassViewer(
+                class_property=self.class_number_text,
+                description_property=self.description_text)
         )
         dialog.open()
 
