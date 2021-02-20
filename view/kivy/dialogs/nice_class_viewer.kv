@@ -1,16 +1,35 @@
 <NiceClassViewer>
-    orientation: "vertical"
-    spacing: "12dp"
-    size_hint_y: None
-    height: "120dp"
+    orientation: "horizontal"
+    spacing: "5dp"
+    height: 400
+
+    label: description_label
 
     ScrollView:
         do_scroll_x: False
         do_scroll_y: True
+        height: 400
+        size_hint_x: .9
 
-        Label:
+        MDTextField:
+            multiline: True
+            id: description_label
+            text: root.description_property
+            text_color: (0, 0, 0, 1)
             size_hint_y: None
-            height: self.texture_size[1]
             text_size: self.width, None
-            padding: 10, 10
-            text: root.description_text
+            line_anim: False
+            readonly: True
+            on_touch_up: root.selected_text = self.selection_text
+
+    BoxLayout:
+        orientation: "vertical"
+        size_hint_x: .1
+
+        MDIconButton:
+            icon: "content-copy"
+            on_release: root.copy_text()
+
+        MDIconButton:
+            icon: "select-all"
+            on_release: root.copy_text(True)

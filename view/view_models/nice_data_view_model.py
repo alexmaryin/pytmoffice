@@ -1,18 +1,24 @@
+from kivy.core.clipboard import Clipboard
 from kivy.properties import ObjectProperty, StringProperty
-from kivymd.uix.behaviors import TouchBehavior
+from kivy.uix.behaviors import ButtonBehavior
+from kivymd.toast import toast
+from kivymd.uix.behaviors import TouchBehavior, RectangularRippleBehavior, BackgroundColorBehavior
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.dialog import MDDialog
 
 
 class NiceClassViewer(MDBoxLayout):
-    description_text = StringProperty()
+    label = ObjectProperty()
+    description_property = StringProperty()
+    selected_text = StringProperty()
 
-    def __init__(self, text, **kwargs):
-        super().__init__(**kwargs)
-        self.description_text = text
+    def copy_text(self, copy_all=False):
+        if self.selected_text != "" or copy_all:
+            Clipboard.copy(self.description_property if copy_all else self.selected_text)
+            toast("Скопировано в буфер обмена", duration=1)
 
 
-class NiceDataListItem(MDBoxLayout, TouchBehavior):
+class NiceDataListItem(MDBoxLayout, TouchBehavior, RectangularRippleBehavior, ButtonBehavior, BackgroundColorBehavior):
     selected = ObjectProperty()
     class_number_text = StringProperty()
     description_text = StringProperty()
@@ -26,11 +32,11 @@ class NiceDataListItem(MDBoxLayout, TouchBehavior):
         self.delete_callback(self.selected)
 
     def on_double_tap(self, touch, *args):
-        content = NiceClassViewer(self.description_text)
         dialog = MDDialog(
             title=f"{self.class_number_text} класс МКТУ:",
             type="custom",
-            content_cls=content
+            size_hint_x=0.8,
+            content_cls=NiceClassViewer(description_property=self.description_text)
         )
         dialog.open()
 
