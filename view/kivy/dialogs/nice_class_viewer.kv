@@ -8,15 +8,18 @@
     description_property: description_property
 
     BoxLayout:
-        orientation: "horizontal"
+        orientation: 'horizontal'
         size_hint_y: .1
         id: class_layout
 
         MDLabel:
             text: "Изменить номер класса:"
+            size_hint_x: .4
 
-        MDTextField:
+        MDDropDownItem:
             id: class_property
+            size_hint_x: .6
+            on_release: root.dropdown.open()
 
     BoxLayout:
         orientation: "horizontal"

@@ -1,11 +1,13 @@
 from kivy.core.clipboard import Clipboard
-from kivy.properties import ObjectProperty, StringProperty, BooleanProperty, BoundedNumericProperty
+from kivy.properties import ObjectProperty, StringProperty, BooleanProperty
 from kivy.uix.behaviors import ButtonBehavior
 from kivymd.toast import toast
 from kivymd.uix.behaviors import TouchBehavior, RectangularRippleBehavior, BackgroundColorBehavior
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.button import MDFlatButton, MDRaisedButton
 from kivymd.uix.dialog import MDDialog
+from kivymd.uix.menu import MDDropdownMenu
+
 from data.repository.result import Result
 from view.common_confirmation import ConfirmDialog
 from view.widget_utils import show_widget, hide_widget
@@ -23,8 +25,19 @@ class NiceClassViewer(MDBoxLayout):
         self.description_property.text = _description
         if self.edit_mode:
             show_widget(self.ids.class_layout)
+            self.dropdown = MDDropdownMenu(
+                caller=self.class_property,
+                items=[{'text': f'{x} класс', 'height': '36dp', 'on_release': self.select_class} for x in range(1, 46)],
+                width_mult=4,
+                position='bottom',
+                callback=self.select_class
+            )
         else:
             hide_widget(self.ids.class_layout)
+
+    def select_class(self, selected_class):
+        self.class_property.text = selected_class.text[:selected_class.text.find(' класс')]
+        self.dropdown.dismiss()
 
     def copy_text(self, copy_all=False):
         if self.selected_text != "" or copy_all:
@@ -80,6 +93,15 @@ class NiceDataViewModel:
         self.dialog.set_normal_height()
         self.dialog.open()
 
+    def edit_item(self, instance):
+        self.edited_item.class_number = int(self.dialog.content_cls.class_property.text)
+        self.edited_item.description = self.dialog.content_cls.description_property.text.encode('utf-8')
+        result, result_text = self.repo.edit_nice_data(self.edited_item)
+        if result == Result.SUCCESS:
+            self.dialog.dismiss()
+            self.refresh_view("МКТУ")
+        toast(result_text)
+
     def on_add_enter(self):
         self.dialog = MDDialog(
             title='Добавление класса МКТУ',
@@ -97,15 +119,6 @@ class NiceDataViewModel:
     def add_item(self, instance):
         _class, _description = self.dialog.content_cls.class_property.text, self.dialog.content_cls.description_property.text
         result, result_text = self.repo.add_nice_data(int(_class), _description.encode('utf-8'))
-        if result == Result.SUCCESS:
-            self.dialog.dismiss()
-            self.refresh_view("МКТУ")
-        toast(result_text)
-
-    def edit_item(self, instance):
-        self.edited_item.class_number = int(self.dialog.content_cls.class_property.text)
-        self.edited_item.description = self.dialog.content_cls.description_property.text.encode('utf-8')
-        result, result_text = self.repo.edit_nice_data(self.edited_item)
         if result == Result.SUCCESS:
             self.dialog.dismiss()
             self.refresh_view("МКТУ")
