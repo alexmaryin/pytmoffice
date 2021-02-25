@@ -11,7 +11,8 @@ class CommonRepository:
             self.source.add(item)
             self.source.commit()
             return Result.SUCCESS, override_success or 'Новая запись внесена в базу'
-        except DBAPIError:
+        except DBAPIError as e:
+            print(e)
             self.source.rollback()
             return Result.ERROR, override_error or 'Ошибка при записи нового элемента в базу'
 
@@ -22,7 +23,8 @@ class CommonRepository:
                 return Result.SUCCESS, override_success or 'Изменения сохранены'
             else:
                 return Result.EMPTY, 'Никаких изменений'
-        except DBAPIError:
+        except DBAPIError as e:
+            print(e)
             self.source.rollback()
             return Result.ERROR, override_error or 'Ошибка при сохранении изменений'
 
@@ -31,6 +33,7 @@ class CommonRepository:
             self.source.delete(item)
             self.source.commit()
             return Result.SUCCESS, override_success or 'Запись удалена из базы'
-        except DBAPIError:
+        except DBAPIError as e:
+            print(e)
             self.source.rollback()
             return Result.ERROR, override_error or 'Удаление невозможно (скорее всего из-за нарушения целостности данных)'

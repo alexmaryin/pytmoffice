@@ -2,35 +2,50 @@
     on_release: root.select_class(self.text)
 
 <NiceClassViewer>:
-    orientation: "horizontal"
+    orientation: "vertical"
     height: 400
-    label: description_label
-
-    ScrollView:
-        do_scroll_x: False
-        do_scroll_y: True
-        height: 400
-        size_hint_x: .9
-
-        MDTextField:
-            multiline: True
-            id: description_label
-            text: root.description_property
-            text_color: (0, 0, 0, 1)
-            size_hint_y: None
-            text_size: self.width, None
-            line_anim: False
-            readonly: True
-            on_touch_up: root.selected_text = self.selection_text
+    class_property: class_property
+    description_property: description_property
 
     BoxLayout:
-        orientation: "vertical"
-        size_hint_x: .1
+        orientation: "horizontal"
+        size_hint_y: .1
+        id: class_layout
 
-        MDIconButton:
-            icon: "content-copy"
-            on_release: root.copy_text()
+        MDLabel:
+            text: "Изменить номер класса:"
 
-        MDIconButton:
-            icon: "select-all"
-            on_release: root.copy_text(True)
+        MDTextField:
+            id: class_property
+
+    BoxLayout:
+        orientation: "horizontal"
+        size_hint_y: .9
+
+        ScrollView:
+            do_scroll_x: False
+            do_scroll_y: True
+            height: 400
+            size_hint_x: .9
+
+            MDTextField:
+                multiline: True
+                id: description_property
+                text_color: (0, 0, 0, 1)
+                size_hint_y: None
+                text_size: self.width, None
+                line_anim: False
+                readonly: not root.edit_mode
+                on_touch_up: root.selected_text = self.selection_text
+
+        BoxLayout:
+            orientation: "vertical"
+            size_hint_x: .1
+
+            MDIconButton:
+                icon: "content-copy"
+                on_release: root.copy_text()
+
+            MDIconButton:
+                icon: "select-all"
+                on_release: root.copy_text(True)
