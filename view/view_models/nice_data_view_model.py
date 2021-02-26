@@ -83,10 +83,10 @@ class NiceDataViewModel:
         self.view_class = NiceDataListItem
         self.dialog = None
         self.edited_item = None
+        self.filter_class = None
         self.items_menu = [
             {'text': 'Фильтр по номеру класса', 'call': self.open_filter},
         ]
-        self.filter_class = None
 
     def close_dialog(self, instance):
         self.dialog.dismiss()
@@ -175,3 +175,4 @@ class NiceDataViewModel:
         for menu_item in self.items_menu:
             if menu_item['text'] == clicked_item.text:
                 menu_item['call']()
+                break

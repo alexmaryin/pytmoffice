@@ -1,16 +1,13 @@
 from kivy.lang import Builder
-from kivy.properties import StringProperty, ListProperty, ObjectProperty, BooleanProperty
-from kivy.uix.behaviors import ButtonBehavior
+from kivy.properties import StringProperty, ListProperty, ObjectProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.recycleview import RecycleView
 from kivymd.app import MDApp
 from kivymd.theming import ThemableBehavior
 from kivymd.toast import toast
-from kivymd.uix.behaviors import TouchBehavior
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.list import OneLineIconListItem, MDList
 from kivymd.uix.menu import MDDropdownMenu
-
 from data.repository.db import *
 from data.repository.intel_repo import IntelRepository, menu_items
 from view.view_models.categories_view_model import CategoryViewModel
