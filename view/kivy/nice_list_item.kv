@@ -39,3 +39,16 @@
             pos_hint: {"center_y": .5}
             active: root.rv_key in app.current_selection
             on_active: app.select_row(root.rv_key, self.active)
+
+<ClassFilterSnackBar>:
+    class_filter_text: class_filter_text
+    BoxLayout:
+        orientation: 'horizontal'
+
+        MDTextFieldRound:
+            id: class_filter_text
+            hint_text: 'Введите номер класса'
+            icon_left: 'feature-search-outline'
+        MDIconButton:
+            icon: 'filter-outline'
+            on_release: root.filter()

@@ -9,6 +9,8 @@ from kivymd.toast import toast
 from kivymd.uix.behaviors import TouchBehavior
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.list import OneLineIconListItem, MDList
+from kivymd.uix.menu import MDDropdownMenu
+
 from data.repository.db import *
 from data.repository.intel_repo import IntelRepository, menu_items
 from view.view_models.categories_view_model import CategoryViewModel
@@ -70,6 +72,7 @@ class CommonList(MDApp):
         self.screen = Builder.load_file('view/kivy/common_list.kv')
         self.container = self.screen.ids.container
         self.active_view_model = GroupViewModel(self.repo, self.navigate)
+        self.dropdown = None
 
     def build(self):
         return self.screen
@@ -94,27 +97,43 @@ class CommonList(MDApp):
         self.root.ids.nav_drawer.set_state('close')
 
     def navigate(self, view):
-        self.view = view
-        self.root.ids.toolbar.title = self.view
         self.loading()
-        if view == 'Группы':
-            self.active_view_model = GroupViewModel(self.repo, self.navigate)
-        elif view == 'Типы объектов':
-            self.active_view_model = CategoryViewModel(self.repo, self.navigate)
-        elif view == 'Должности':
-            self.active_view_model = PositionViewModel(self.repo, self.navigate)
-        elif view == 'МКТУ':
-            self.active_view_model = NiceDataViewModel(self.repo, self.navigate)
-        else:
-            self.active_view_model = None
-            toast('Пока не реализовано')
+        if self.view != view:
+            self.view = view
+            self.root.ids.toolbar.title = self.view
+            if view == 'Группы':
+                self.active_view_model = GroupViewModel(self.repo, self.navigate)
+            elif view == 'Типы объектов':
+                self.active_view_model = CategoryViewModel(self.repo, self.navigate)
+            elif view == 'Должности':
+                self.active_view_model = PositionViewModel(self.repo, self.navigate)
+            elif view == 'МКТУ':
+                self.active_view_model = NiceDataViewModel(self.repo, self.navigate)
+            else:
+                self.active_view_model = None
+                toast('Пока не реализовано')
         if self.active_view_model:
             self.container.view_class = self.active_view_model.view_class or GenericListItem
-            print(f'Элементы recyclerview класса {self.container.view_class}')
             self.data = self.active_view_model.show_items()
+            if hasattr(self.active_view_model, 'items_menu'):
+                self.dropdown = MDDropdownMenu(
+                    caller=self.root.ids.toolbar,
+                    items=self.active_view_model.items_menu,
+                    width_mult=4,
+                    position='bottom',
+                    callback=self.click_menu_item
+                )
 
     def add_item(self):
         if self.active_view_model:
             self.active_view_model.on_add_enter()
         else:
             toast('Пока не реализовано')
+
+    def open_items_menu(self):
+        if hasattr(self.active_view_model, 'items_menu'):
+            self.dropdown.open()
+
+    def click_menu_item(self, clicked_item):
+        self.active_view_model.on_menu_clicked(clicked_item)
+        self.dropdown.dismiss()

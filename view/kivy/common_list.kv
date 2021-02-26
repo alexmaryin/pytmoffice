@@ -22,7 +22,7 @@ Screen:
                         title: "пусто"
                         elevation: 10
                         left_action_items: [['menu', lambda x: nav_drawer.set_state("open")]]
-                        right_action_items: [['dots-vertical', lambda x: x], ['plus-circle-outline', lambda x: app.add_item()]]
+                        right_action_items: [['dots-vertical', lambda x: app.open_items_menu()], ['plus-circle-outline', lambda x: app.add_item()]]
 
                     ScrollView:
                         RVList:

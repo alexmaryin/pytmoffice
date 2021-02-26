@@ -7,7 +7,7 @@ from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.button import MDFlatButton, MDRaisedButton
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.menu import MDDropdownMenu
-
+from kivymd.uix.snackbar import Snackbar
 from data.repository.result import Result
 from view.common_confirmation import ConfirmDialog
 from view.widget_utils import show_widget, hide_widget
@@ -68,6 +68,14 @@ class NiceDataListItem(MDBoxLayout, TouchBehavior, RectangularRippleBehavior, Bu
         dialog.open()
 
 
+class ClassFilterSnackBar(Snackbar):
+    class_filter_text = ObjectProperty()
+    filter_callback = ObjectProperty()
+
+    def filter(self):
+        self.filter_callback(int(self.class_filter_text.text))
+
+
 class NiceDataViewModel:
     def __init__(self, repository, refresh_view_callback):
         self.repo = repository
@@ -75,6 +83,10 @@ class NiceDataViewModel:
         self.view_class = NiceDataListItem
         self.dialog = None
         self.edited_item = None
+        self.items_menu = [
+            {'text': 'Фильтр по номеру класса', 'call': self.open_filter},
+        ]
+        self.filter_class = None
 
     def close_dialog(self, instance):
         self.dialog.dismiss()
@@ -107,7 +119,7 @@ class NiceDataViewModel:
             title='Добавление класса МКТУ',
             type="custom",
             size_hint_x=0.8,
-            content_cls=NiceClassViewer("", "", edit_mode=True),
+            content_cls=NiceClassViewer("1", "", edit_mode=True),
             buttons=[
                 MDFlatButton(text='Отмена', on_release=self.close_dialog),
                 MDRaisedButton(text='Записать', on_release=self.add_item)]
@@ -134,7 +146,7 @@ class NiceDataViewModel:
         toast(result_text)
 
     def show_items(self) -> list[dict]:
-        nice_data = self.repo.get_nice_data()
+        nice_data = self.repo.get_nice_data(class_filter=self.filter_class)
         data_dict = []
         for item in nice_data:
             data_dict.append({
@@ -145,4 +157,21 @@ class NiceDataViewModel:
                 'edit_callback': self.on_edit_enter,
                 'delete_callback': self.on_delete_enter
             })
+        self.filter_class = None
         return data_dict
+
+    def show_items_filtered(self, filter_class):
+        self.filter_class = filter_class
+        self.refresh_view('МКТУ')
+
+    def open_filter(self):
+        ClassFilterSnackBar(
+            filter_callback=self.show_items_filtered,
+            text='Фильтр по классу:',
+            duration=6
+        ).show()
+
+    def on_menu_clicked(self, clicked_item):
+        for menu_item in self.items_menu:
+            if menu_item['text'] == clicked_item.text:
+                menu_item['call']()

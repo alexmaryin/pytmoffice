@@ -111,8 +111,11 @@ class IntelRepository(CommonRepository):
 
         # NICE CRUD methods
 
-    def get_nice_data(self) -> list[NiceData]:
-        return self.source.query(NiceData).order_by(NiceData.class_number, NiceData.description).all()
+    def get_nice_data(self, class_filter=None) -> list[NiceData]:
+        if class_filter:
+            return self.source.query(NiceData).filter(NiceData.class_number.like(class_filter)).order_by(NiceData.description).all()
+        else:
+            return self.source.query(NiceData).order_by(NiceData.class_number, NiceData.description).all()
 
     def add_nice_data(self, class_number, description) -> (Result, str):
         new = NiceData(class_number=class_number, description=description)
