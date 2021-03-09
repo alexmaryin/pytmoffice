@@ -16,10 +16,8 @@ class ConfirmDialog(MDDialog):
         self.open()
 
     def set_cancel(self, instance):
-        print('cancel invoked')
         self.dismiss()
 
     def set_confirmation(self, instance):
-        print('confirm invoked')
         self.dismiss()
         self.confirmed_action(self.obj)

@@ -10,6 +10,7 @@ from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.snackbar import Snackbar
 from data.repository.result import Result
 from view.common_confirmation import ConfirmDialog
+from view.common_dialog_input import OneStrInputDialog
 from view.widget_utils import show_widget, hide_widget
 
 
@@ -84,8 +85,11 @@ class NiceDataViewModel:
         self.dialog = None
         self.edited_item = None
         self.filter_class = None
+        self.filter_text = None
         self.items_menu = [
             {'text': 'Фильтр по номеру класса', 'call': self.open_filter},
+            {'text': 'Фильтр по тексту', 'call': self.open_text_filter},
+            {'text': 'Сбросить фильтры', 'call': self.cancel_filters},
         ]
 
     def close_dialog(self, instance):
@@ -146,7 +150,7 @@ class NiceDataViewModel:
         toast(result_text)
 
     def show_items(self) -> list[dict]:
-        nice_data = self.repo.get_nice_data(class_filter=self.filter_class)
+        nice_data = self.repo.get_nice_data(class_filter=self.filter_class, text_filter=self.filter_text)
         data_dict = []
         for item in nice_data:
             data_dict.append({
@@ -164,12 +168,28 @@ class NiceDataViewModel:
         self.filter_class = filter_class
         self.refresh_view('МКТУ')
 
+    def show_items_text_filtered(self, filter_text):
+        self.filter_text = filter_text
+        self.refresh_view('МКТУ')
+
     def open_filter(self):
-        ClassFilterSnackBar(
-            filter_callback=self.show_items_filtered,
-            text='Фильтр по классу:',
-            duration=6
-        ).show()
+        OneStrInputDialog(
+            title='Фильтр по классу МКТУ',
+            text='Введите номер класса:',
+            apply_callback=self.show_items_filtered
+        ).open()
+
+    def open_text_filter(self):
+        OneStrInputDialog(
+            title='Полнотекстовый поиск',
+            text='Введите текст для поиска:',
+            apply_callback=self.show_items_text_filtered
+        ).open()
+
+    def cancel_filters(self):
+        self.filter_text = None
+        self.filter_class = None
+        self.refresh_view('МКТУ')
 
     def on_menu_clicked(self, clicked_item):
         for menu_item in self.items_menu:

@@ -111,9 +111,11 @@ class IntelRepository(CommonRepository):
 
         # NICE CRUD methods
 
-    def get_nice_data(self, class_filter=None) -> list[NiceData]:
+    def get_nice_data(self, class_filter=None, text_filter=None) -> list[NiceData]:
         if class_filter:
             return self.source.query(NiceData).filter(NiceData.class_number.like(class_filter)).order_by(NiceData.description).all()
+        elif text_filter:
+            return self.source.query(NiceData).filter(NiceData.description.like(f'%{text_filter}%')).order_by(NiceData.class_number).all()
         else:
             return self.source.query(NiceData).order_by(NiceData.class_number, NiceData.description).all()
 

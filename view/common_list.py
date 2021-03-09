@@ -95,9 +95,9 @@ class CommonList(MDApp):
 
     def navigate(self, view):
         self.loading()
+        self.root.ids.toolbar.title = view
         if self.view != view:
             self.view = view
-            self.root.ids.toolbar.title = self.view
             if view == 'Группы':
                 self.active_view_model = GroupViewModel(self.repo, self.navigate)
             elif view == 'Типы объектов':
@@ -116,10 +116,12 @@ class CommonList(MDApp):
                 self.dropdown = MDDropdownMenu(
                     caller=self.root.ids.toolbar,
                     items=self.active_view_model.items_menu,
-                    width_mult=4,
-                    position='bottom',
+                    position='auto',
+                    width_mult=6,
                     callback=self.click_menu_item
                 )
+            else:
+                self.dropdown = None
 
     def add_item(self):
         if self.active_view_model:
@@ -128,7 +130,7 @@ class CommonList(MDApp):
             toast('Пока не реализовано')
 
     def open_items_menu(self):
-        if hasattr(self.active_view_model, 'items_menu'):
+        if self.dropdown:
             self.dropdown.open()
 
     def click_menu_item(self, clicked_item):
