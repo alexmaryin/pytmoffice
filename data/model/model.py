@@ -80,6 +80,9 @@ class Entity(Base):
         'polymorphic_identity': 'entities'
     }
 
+    def get_fullname(self) -> str:
+        raise NotImplementedError
+
 
 class Legal(Entity):
     fullname = Column(String(300))

@@ -1,8 +1,9 @@
 from kivy.properties import ObjectProperty, StringProperty
+from kivymd.uix.behaviors import TouchBehavior
 from kivymd.uix.boxlayout import MDBoxLayout
 
 
-class GenericListItem(MDBoxLayout):
+class GenericListItem(MDBoxLayout, TouchBehavior):
     selected = ObjectProperty()
     main_text = StringProperty()
     second_text = StringProperty()
@@ -14,3 +15,6 @@ class GenericListItem(MDBoxLayout):
 
     def delete_item(self):
         self.delete_callback(self.selected)
+
+    def on_double_tap(self, touch, *args):
+        print(f"Double tapped element {self.selected}")
