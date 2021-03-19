@@ -12,8 +12,20 @@ from data.repository.db import *
 from data.repository.intel_repo import IntelRepository, menu_items
 from view.view_models.categories_view_model import CategoryViewModel
 from view.view_models.groups_view_model import GroupViewModel
+from view.view_models.legals_view_model import LegalViewModel
 from view.view_models.nice_data_view_model import NiceDataViewModel
+from view.view_models.persons_view_model import PersonViewModel
 from view.view_models.positions_view_model import PositionViewModel
+
+
+view_models_dict = {
+                'Группы': GroupViewModel,
+                'Типы объектов': CategoryViewModel,
+                'Должности': PositionViewModel,
+                'МКТУ': NiceDataViewModel,
+                'Физические лица': PersonViewModel,
+                'Юридические лица': LegalViewModel,
+            }
 
 
 class GenericListItem(MDBoxLayout):
@@ -68,7 +80,8 @@ class CommonList(MDApp):
         self.repo = IntelRepository(self.db)
         self.screen = Builder.load_file('view/kivy/common_list.kv')
         self.container = self.screen.ids.container
-        self.active_view_model = GroupViewModel(self.repo, self.navigate)
+        self.active_view_model = None
+        # self.active_view_model = GroupViewModel(self.repo, self.navigate)
         self.dropdown = None
 
     def build(self):
@@ -93,35 +106,30 @@ class CommonList(MDApp):
         self.current_selection = []
         self.root.ids.nav_drawer.set_state('close')
 
-    def navigate(self, view):
+    def navigate(self, view, filtered=False):
         self.loading()
         self.root.ids.toolbar.title = view
-        if self.view != view:
-            self.view = view
-            if view == 'Группы':
-                self.active_view_model = GroupViewModel(self.repo, self.navigate)
-            elif view == 'Типы объектов':
-                self.active_view_model = CategoryViewModel(self.repo, self.navigate)
-            elif view == 'Должности':
-                self.active_view_model = PositionViewModel(self.repo, self.navigate)
-            elif view == 'МКТУ':
-                self.active_view_model = NiceDataViewModel(self.repo, self.navigate)
-            else:
-                self.active_view_model = None
-                toast('Пока не реализовано')
-        if self.active_view_model:
-            self.container.view_class = self.active_view_model.view_class or GenericListItem
+        if filtered and self.active_view_model:
             self.data = self.active_view_model.show_items()
-            if hasattr(self.active_view_model, 'items_menu'):
-                self.dropdown = MDDropdownMenu(
-                    caller=self.root.ids.toolbar,
-                    items=self.active_view_model.items_menu,
-                    position='auto',
-                    width_mult=6,
-                    callback=self.click_menu_item
-                )
+        else:
+            self.view = view
+            view_model = view_models_dict.get(view)
+            if view_model:
+                self.active_view_model = view_model(self.repo, self.navigate)
+                self.container.view_class = self.active_view_model.view_class or GenericListItem
+                self.data = self.active_view_model.show_items()
+                if hasattr(self.active_view_model, 'items_menu'):
+                    self.dropdown = MDDropdownMenu(
+                        caller=self.root.ids.toolbar,
+                        items=self.active_view_model.items_menu,
+                        position='auto',
+                        width_mult=6,
+                        callback=self.click_menu_item
+                    )
+                else:
+                    self.dropdown = None
             else:
-                self.dropdown = None
+                toast('Пока не реализовано')
 
     def add_item(self):
         if self.active_view_model:

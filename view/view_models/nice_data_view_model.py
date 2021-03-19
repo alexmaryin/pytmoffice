@@ -166,11 +166,11 @@ class NiceDataViewModel:
 
     def show_items_filtered(self, filter_class):
         self.filter_class = filter_class
-        self.refresh_view('МКТУ')
+        self.refresh_view('МКТУ', filtered=True)
 
     def show_items_text_filtered(self, filter_text):
         self.filter_text = filter_text
-        self.refresh_view('МКТУ')
+        self.refresh_view('МКТУ', filtered=True)
 
     def open_filter(self):
         OneStrInputDialog(
