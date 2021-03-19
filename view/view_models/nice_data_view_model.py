@@ -7,14 +7,13 @@ from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.button import MDFlatButton, MDRaisedButton
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.menu import MDDropdownMenu
-from kivymd.uix.snackbar import Snackbar
 from data.repository.result import Result
 from view.common_confirmation import ConfirmDialog
 from view.common_dialog_input import OneStrInputDialog
 from view.widget_utils import show_widget, hide_widget
 
 
-class NiceClassViewer(MDBoxLayout):
+class NiceClassDialog(MDBoxLayout):
     description_property = ObjectProperty()
     selected_text = StringProperty()
     class_property = ObjectProperty()
@@ -64,17 +63,9 @@ class NiceDataListItem(MDBoxLayout, TouchBehavior, RectangularRippleBehavior, Bu
             title=f"{self.class_number_text} класс МКТУ:",
             type="custom",
             size_hint_x=0.8,
-            content_cls=NiceClassViewer(self.class_number_text, self.description_text, edit_mode=False),
+            content_cls=NiceClassDialog(self.class_number_text, self.description_text, edit_mode=False),
         )
         dialog.open()
-
-
-class ClassFilterSnackBar(Snackbar):
-    class_filter_text = ObjectProperty()
-    filter_callback = ObjectProperty()
-
-    def filter(self):
-        self.filter_callback(int(self.class_filter_text.text))
 
 
 class NiceDataViewModel:
@@ -100,7 +91,7 @@ class NiceDataViewModel:
             title=f"{item.class_number} класс МКТУ:",
             type="custom",
             size_hint_x=0.8,
-            content_cls=NiceClassViewer(str(item.class_number), item.description.decode('utf-8'), edit_mode=True),
+            content_cls=NiceClassDialog(str(item.class_number), item.description.decode('utf-8'), edit_mode=True),
             buttons=[
                 MDFlatButton(text='Отмена', on_release=self.close_dialog),
                 MDRaisedButton(text='Записать', on_release=self.edit_item)]
@@ -123,7 +114,7 @@ class NiceDataViewModel:
             title='Добавление класса МКТУ',
             type="custom",
             size_hint_x=0.8,
-            content_cls=NiceClassViewer("1", "", edit_mode=True),
+            content_cls=NiceClassDialog("1", "", edit_mode=True),
             buttons=[
                 MDFlatButton(text='Отмена', on_release=self.close_dialog),
                 MDRaisedButton(text='Записать', on_release=self.add_item)]

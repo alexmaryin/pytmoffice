@@ -11,6 +11,7 @@ from kivymd.uix.menu import MDDropdownMenu
 from data.repository.db import *
 from data.repository.intel_repo import IntelRepository, menu_items
 from view.view_models.categories_view_model import CategoryViewModel
+from view.view_models.generic_list_item import GenericListItem
 from view.view_models.groups_view_model import GroupViewModel
 from view.view_models.legals_view_model import LegalViewModel
 from view.view_models.nice_data_view_model import NiceDataViewModel
@@ -26,20 +27,6 @@ view_models_dict = {
                 'Физические лица': PersonViewModel,
                 'Юридические лица': LegalViewModel,
             }
-
-
-class GenericListItem(MDBoxLayout):
-    selected = ObjectProperty()
-    main_text = StringProperty()
-    second_text = StringProperty()
-    edit_callback = ObjectProperty()
-    delete_callback = ObjectProperty()
-
-    def edit_item(self):
-        self.edit_callback(self.selected)
-
-    def delete_item(self):
-        self.delete_callback(self.selected)
 
 
 class ContentNavigationDrawer(BoxLayout):
@@ -81,7 +68,6 @@ class CommonList(MDApp):
         self.screen = Builder.load_file('view/kivy/common_list.kv')
         self.container = self.screen.ids.container
         self.active_view_model = None
-        # self.active_view_model = GroupViewModel(self.repo, self.navigate)
         self.dropdown = None
 
     def build(self):

@@ -1,4 +1,22 @@
+from kivy.properties import ObjectProperty
+from kivymd.uix.behaviors import TouchBehavior
+from kivymd.uix.boxlayout import MDBoxLayout
 from data.repository.intel_repo import EntityCategory
+from view.view_models.generic_list_item import GenericListItem
+
+
+class EntityListItem(GenericListItem, TouchBehavior):
+    def on_double_tap(self, touch, *args):
+        print(f"Double tapped element {self.selected}")
+
+
+class PersonDialog(MDBoxLayout):
+    name_property = ObjectProperty()
+    second_name_property = ObjectProperty()
+    surname_property = ObjectProperty()
+    birthdate_property = ObjectProperty()
+    address_property = ObjectProperty()
+    accounts_property = ObjectProperty()
 
 
 class PersonViewModel:
@@ -9,7 +27,7 @@ class PersonViewModel:
         self.edited_item = None
         self.filter_class = None
         self.filter_text = None
-        self.view_class = None
+        self.view_class = EntityListItem
         self.items_menu = [
             {'text': 'Связанные юридические лица', 'call': self.show_managed_legals},
         ]
