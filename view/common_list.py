@@ -5,7 +5,6 @@ from kivy.uix.recycleview import RecycleView
 from kivymd.app import MDApp
 from kivymd.theming import ThemableBehavior
 from kivymd.toast import toast
-from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.list import OneLineIconListItem, MDList
 from kivymd.uix.menu import MDDropdownMenu
 from data.repository.db import *
@@ -17,7 +16,6 @@ from view.view_models.legals_view_model import LegalViewModel
 from view.view_models.nice_data_view_model import NiceDataViewModel
 from view.view_models.persons_view_model import PersonViewModel
 from view.view_models.positions_view_model import PositionViewModel
-
 
 view_models_dict = {
                 'Группы': GroupViewModel,

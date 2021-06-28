@@ -7,6 +7,8 @@ from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.button import MDFlatButton, MDRaisedButton
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.menu import MDDropdownMenu
+
+from data.model.model import NiceData
 from data.repository.result import Result
 from view.common_confirmation import ConfirmDialog
 from view.common_dialog_input import OneStrInputDialog
@@ -19,10 +21,10 @@ class NiceClassDialog(MDBoxLayout):
     class_property = ObjectProperty()
     edit_mode = BooleanProperty(False)
 
-    def __init__(self, _class, _description, **kwargs):
+    def __init__(self, nice: NiceData, **kwargs):
         super().__init__(**kwargs)
-        self.class_property.text = _class
-        self.description_property.text = _description
+        self.class_property.text = str(nice.class_number)
+        self.description_property.text = nice.description.decode('utf-8')
         if self.edit_mode:
             show_widget(self.ids.class_layout)
             self.dropdown = MDDropdownMenu(
@@ -63,7 +65,7 @@ class NiceDataListItem(MDBoxLayout, TouchBehavior, RectangularRippleBehavior, Bu
             title=f"{self.class_number_text} класс МКТУ:",
             type="custom",
             size_hint_x=0.8,
-            content_cls=NiceClassDialog(self.class_number_text, self.description_text, edit_mode=False),
+            content_cls=NiceClassDialog(self.selected, edit_mode=False),
         )
         dialog.open()
 
@@ -91,7 +93,7 @@ class NiceDataViewModel:
             title=f"{item.class_number} класс МКТУ:",
             type="custom",
             size_hint_x=0.8,
-            content_cls=NiceClassDialog(str(item.class_number), item.description.decode('utf-8'), edit_mode=True),
+            content_cls=NiceClassDialog(item, edit_mode=True),
             buttons=[
                 MDFlatButton(text='Отмена', on_release=self.close_dialog),
                 MDRaisedButton(text='Записать', on_release=self.edit_item)]
@@ -114,7 +116,7 @@ class NiceDataViewModel:
             title='Добавление класса МКТУ',
             type="custom",
             size_hint_x=0.8,
-            content_cls=NiceClassDialog("1", "", edit_mode=True),
+            content_cls=NiceClassDialog(NiceData(class_number=1, description=''.encode('utf-8')), edit_mode=True),
             buttons=[
                 MDFlatButton(text='Отмена', on_release=self.close_dialog),
                 MDRaisedButton(text='Записать', on_release=self.add_item)]
@@ -125,7 +127,10 @@ class NiceDataViewModel:
 
     def add_item(self, instance):
         _class, _description = self.dialog.content_cls.class_property.text, self.dialog.content_cls.description_property.text
-        result, result_text = self.repo.add_nice_data(int(_class), _description.encode('utf-8'))
+        result, result_text = self.repo.add_nice_data(NiceData(
+            class_number=int(_class),
+            description=_description.encode('utf-8'))
+        )
         if result == Result.SUCCESS:
             self.dialog.dismiss()
             self.refresh_view("МКТУ")

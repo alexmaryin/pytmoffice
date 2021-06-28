@@ -1,9 +1,12 @@
 from kivy.properties import ObjectProperty
 from kivymd.uix.boxlayout import MDBoxLayout
+
+from data.model.model import Person
 from data.repository.intel_repo import EntityCategory
+from view.view_models.entities_view_model import EntitiesViewModel
 
 
-class PersonDialog(MDBoxLayout):
+class PersonEditDialog(MDBoxLayout):
     name_property = ObjectProperty()
     second_name_property = ObjectProperty()
     surname_property = ObjectProperty()
@@ -11,15 +14,20 @@ class PersonDialog(MDBoxLayout):
     address_property = ObjectProperty()
     accounts_property = ObjectProperty()
 
+    def __init__(self, person: Person, **kwargs):
+        super().__init__(**kwargs)
+        self.name_property.text = person.name
+        self.second_name_property.text = person.second_name
+        self.surname_property.text = person.surname
+        self.address_property.text = person.address
+        self.birthdate_property.text = person.birthdate.strftime('%d.%m.%Y')
+        # fill accounts if present
 
-class PersonViewModel:
+
+class PersonViewModel(EntitiesViewModel):
     def __init__(self, repository, refresh_view_callback):
-        self.repo = repository
-        self.refresh_view = refresh_view_callback
+        super().__init__(repository, refresh_view_callback, 'Физические лица')
         self.dialog = None
-        self.edited_item = None
-        self.filter_class = None
-        self.filter_text = None
         self.view_class = None
         self.items_menu = [
             {'text': 'Связанные юридические лица', 'call': self.show_managed_legals},
@@ -38,12 +46,6 @@ class PersonViewModel:
                 'delete_callback': self.on_delete_enter
             })
         return data_dict
-
-    def on_edit_enter(self, instance):
-        pass
-
-    def on_delete_enter(self, instance):
-        pass
 
     def show_managed_legals(self):
         pass

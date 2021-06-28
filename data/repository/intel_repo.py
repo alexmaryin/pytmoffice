@@ -66,6 +66,11 @@ class IntelRepository(CommonRepository):
         else:
             return self.source.query(entities_for_query).order_by(Entity.type, Entity.name).all()
 
+    def delete_entity(self, entity) -> (Result, str):
+        return self.common_delete_item(
+            item=entity,
+            override_success=f'Запись о лице {entity.get_fullname()} удалена!')
+
         # AnnualFees CRUD methods
 
     def get_annual_fees(self) -> list[AnnualFee]:
@@ -119,9 +124,8 @@ class IntelRepository(CommonRepository):
         else:
             return self.source.query(NiceData).order_by(NiceData.class_number, NiceData.description).all()
 
-    def add_nice_data(self, class_number, description) -> (Result, str):
-        new = NiceData(class_number=class_number, description=description)
-        return self.common_add_item(item=new)
+    def add_nice_data(self, new_class: NiceData) -> (Result, str):
+        return self.common_add_item(item=new_class)
 
     def edit_nice_data(self, nice_data) -> (Result, str):
         return self.common_edit_item(item=nice_data)
