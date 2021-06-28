@@ -1,4 +1,4 @@
-from kivy.properties import ObjectProperty
+from kivy.properties import ObjectProperty, BooleanProperty
 from kivymd.uix.boxlayout import MDBoxLayout
 
 from data.model.model import Person
@@ -13,6 +13,7 @@ class PersonEditDialog(MDBoxLayout):
     birthdate_property = ObjectProperty()
     address_property = ObjectProperty()
     accounts_property = ObjectProperty()
+    edit_mode = BooleanProperty(False)
 
     def __init__(self, person: Person, **kwargs):
         super().__init__(**kwargs)
