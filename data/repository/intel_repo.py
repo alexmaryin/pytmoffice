@@ -23,6 +23,14 @@ class EntityCategory(Enum):
     Legals = 2
 
 
+class ObjectCategory(Enum):
+    All = 0
+    Trademarks = 1
+    Inventions = 2
+    Designs = 3
+    Models = 4
+
+
 class IntelRepository(CommonRepository):
     def __init__(self, database):
         super(IntelRepository, self).__init__(database)
@@ -132,3 +140,20 @@ class IntelRepository(CommonRepository):
 
     def delete_nice_data(self, nice_data) -> (Result, str):
         return self.common_delete_item(item=nice_data)
+
+        # OBJECTS_CRUD methods
+
+    def get_objects(self, object_type=ObjectCategory.All) -> list[IntelObject]:
+        objects_for_query = {
+            ObjectCategory.All: with_polymorphic(IntelObject, [Trademark, Invention, Design, UtilityModel]),
+            ObjectCategory.Trademarks: Trademark,
+            ObjectCategory.Inventions: Invention,
+            ObjectCategory.Designs: Design,
+            ObjectCategory.Models: UtilityModel
+        }[object_type]
+        return self.source.query(objects_for_query).order_by(IntelObject.group_id, IntelObject.number_in_group).all()
+
+    def get_objects_by_holder(self, holder_id, object_type=None) -> list[IntelObject]:
+        unfiltered = self.get_objects(object_type)
+        return [obj for obj in unfiltered if obj.holder_id == holder_id]
+        # analog of return list(filter(lambda obj: obj.holder_id == holder_id, unfiltered))

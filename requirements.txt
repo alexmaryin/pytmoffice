@@ -1,6 +1,4 @@
-Kivy==2.0.0
-Kivy-Garden==0.1.4
-PyMySQL==0.10.1
-pytest==6.2.2
-SQLAlchemy==1.4.0b1
-kivymd==0.104.1
+PyMySQL==1.0.2
+pytest==6.2.5
+SQLAlchemy==1.4.29
+docxtpl==0.15.2

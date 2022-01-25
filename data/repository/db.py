@@ -10,7 +10,7 @@ class DataBaseConnection:
     def __init__(self):
         try:
             print('Connecting to working database on mySQL...')
-            self.engine = sa.create_engine(connection_str, pool_pre_ping=True, echo=True, future=True)
+            self.engine = sa.create_engine(connection_str, pool_pre_ping=True, echo=False, future=True)
             c = self.engine.connect()
             c.close()
         except DBAPIError:
