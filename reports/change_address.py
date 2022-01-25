@@ -2,6 +2,8 @@ import os
 import pandas as pd
 from datetime import datetime
 from docxtpl import DocxTemplate
+
+from data.fees.trademark_fees import TrademarkFees
 from data.repository.db import DataBaseConnection
 from data.repository.intel_repo import IntelRepository, ObjectCategory
 
@@ -12,24 +14,26 @@ OUTPUT_DIR = 'output'
 
 
 def add_common_fee(fee_table, number, holder):
+    fee = TrademarkFees['common_registry_change']
     fee_table['number'].append(number)
-    fee_table['code'].append('2.18')
-    fee_table['amount'].append(4800)
+    fee_table['code'].append(fee.code)
+    fee_table['amount'].append(fee.amount)
     fee_table['payer'].append(holder)
-    fee_table['description'].append(f"2.18. Пошлина за внесение изменений в Перечень общеизвестных товарных знаков в части адреса правобладателя и выдачу свидетельства на бумажном носителе. Свидетельство N{number}. 4800 р. НДС не облагается.")
+    fee_table['description'].append(fee.get_description_for_trademark(number))
 
 
 def add_regular_fee(fee_table, number, holder):
+    fee_registry, fee_paper = TrademarkFees['registry_change'], TrademarkFees['certificate_change_paper']
     fee_table['number'].append(number)
-    fee_table['code'].append('2.16')
-    fee_table['amount'].append(2800)
+    fee_table['code'].append(fee_registry.code)
+    fee_table['amount'].append(fee_registry.amount)
     fee_table['payer'].append(holder)
-    fee_table['description'].append(f"2.16. Пошлина за внесение изменений в Реестр товарных знаков в части адреса правобладателя. Свидетельство N{number}. 2800 р. НДС не облагается.")
+    fee_table['description'].append(fee_registry.get_description_for_trademark(number))
     fee_table['number'].append(number)
-    fee_table['code'].append('2.17')
-    fee_table['amount'].append(4000)
+    fee_table['code'].append(fee_paper.code)
+    fee_table['amount'].append(fee_paper.amount)
     fee_table['payer'].append(holder)
-    fee_table['description'].append(f"2.17. Пошлина за внесение изменений в Свидетельство на товарный знак N{number} в части адреса правообладателя и выдачу свидетельства на бумажном носителе. 4000 р. НДС не облагается.")
+    fee_table['description'].append(fee_paper.get_description_for_trademark(number))
 
 
 def trademarks_by_holder(repo: IntelRepository, holder_id: int):
