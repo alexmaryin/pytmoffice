@@ -24,11 +24,20 @@ class EntityCategory(Enum):
 
 
 class ObjectCategory(Enum):
-    All = 0
-    Trademarks = 1
-    Inventions = 2
-    Designs = 3
-    Models = 4
+    Trademarks = 0
+    Inventions = 1
+    Designs = 2
+    Models = 3
+    All = 4
+
+
+objects_for_query = {
+    ObjectCategory.Trademarks: Trademark,
+    ObjectCategory.Inventions: Invention,
+    ObjectCategory.Designs: Design,
+    ObjectCategory.Models: UtilityModel,
+    ObjectCategory.All: with_polymorphic(IntelObject, [Trademark, Invention, Design, UtilityModel]),
+}
 
 
 class IntelRepository(CommonRepository):
@@ -39,7 +48,8 @@ class IntelRepository(CommonRepository):
 
     def get_groups(self, filter_query='') -> list[Group]:
         if filter_query:
-            return self.source.query(Group).filter(Group.group_name.like(f'%{filter_query}%')).order_by(Group.group_name).all()
+            return self.source.query(Group).filter(Group.group_name.like(f'%{filter_query}%')).order_by(
+                Group.group_name).all()
         else:
             return self.source.query(Group).order_by(Group.ID).all()
 
@@ -70,7 +80,8 @@ class IntelRepository(CommonRepository):
             EntityCategory.Legals: Legal
         }[category]
         if filter_query:
-            return self.source.query(entities_for_query).filter(Entity.name.like(f'%{filter_query}%')).order_by(Entity.name).all()
+            return self.source.query(entities_for_query).filter(Entity.name.like(f'%{filter_query}%')).order_by(
+                Entity.name).all()
         else:
             return self.source.query(entities_for_query).order_by(Entity.type, Entity.name).all()
 
@@ -126,9 +137,11 @@ class IntelRepository(CommonRepository):
 
     def get_nice_data(self, class_filter=None, text_filter=None) -> list[NiceData]:
         if class_filter:
-            return self.source.query(NiceData).filter(NiceData.class_number.like(class_filter)).order_by(NiceData.description).all()
+            return self.source.query(NiceData).filter(NiceData.class_number.like(class_filter)).order_by(
+                NiceData.description).all()
         elif text_filter:
-            return self.source.query(NiceData).filter(NiceData.description.like(f'%{text_filter}%')).order_by(NiceData.class_number).all()
+            return self.source.query(NiceData).filter(NiceData.description.like(f'%{text_filter}%')).order_by(
+                NiceData.class_number).all()
         else:
             return self.source.query(NiceData).order_by(NiceData.class_number, NiceData.description).all()
 
@@ -144,16 +157,13 @@ class IntelRepository(CommonRepository):
         # OBJECTS_CRUD methods
 
     def get_objects(self, object_type=ObjectCategory.All) -> list[IntelObject]:
-        objects_for_query = {
-            ObjectCategory.All: with_polymorphic(IntelObject, [Trademark, Invention, Design, UtilityModel]),
-            ObjectCategory.Trademarks: Trademark,
-            ObjectCategory.Inventions: Invention,
-            ObjectCategory.Designs: Design,
-            ObjectCategory.Models: UtilityModel
-        }[object_type]
-        return self.source.query(objects_for_query).order_by(IntelObject.group_id, IntelObject.number_in_group).all()
+        types = objects_for_query[object_type]
+        return self.source.query(types).order_by(IntelObject.group_id, IntelObject.number_in_group).all()
 
-    def get_objects_by_holder(self, holder_id, object_type=None) -> list[IntelObject]:
-        unfiltered = self.get_objects(object_type)
-        return [obj for obj in unfiltered if obj.holder_id == holder_id]
-        # analog of return list(filter(lambda obj: obj.holder_id == holder_id, unfiltered))
+    def get_objects_by_holder(self, holder_id: int, object_type=None) -> list[IntelObject]:
+        types = objects_for_query[object_type]
+        return self.source.query(types).filter(IntelObject.holder_id == holder_id).all()
+
+    def get_objects_by_numbers(self, numbers: list[str], object_type=None) -> list[IntelObject]:
+        types = objects_for_query[object_type]
+        return self.source.query(types).filter(IntelObject.number.in_(numbers)).all()
