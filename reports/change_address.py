@@ -3,7 +3,8 @@ import pandas as pd
 from datetime import datetime
 from docxtpl import DocxTemplate
 
-from data.fees.trademark_fees import TrademarkFees, PatentFees
+from data.fees.patent_fees import PatentFees
+from data.fees.trademark_fees import TrademarkFees
 from data.model.model import Trademark, IntelObject, Legal, Person
 from data.repository.db import DataBaseConnection
 from data.repository.intel_repo import IntelRepository, ObjectCategory
@@ -12,6 +13,12 @@ COMMON_TM = 'templates/address_change_common_tm.docx'
 REGULAR_TM = 'templates/address_change_regular_tm.docx'
 PATENT = 'templates/address_change_patent.docx'
 OUTPUT_DIR = 'output'
+patent_header = [
+    {"code": 0, "nom": "Товарный знак", "gen": "товарных знаков"},
+    {"code": 1, "nom": "Изобретение", "gen": "изобретений"},
+    {"code": 2, "nom": "Промышленный образец", "gen": "промышленных образцов"},
+    {"code": 3, "nom": "Полезная модель", "gen": "полезных моделей"},
+]
 
 
 def add_common_fee(fee_table, number, holder, changes_count=1):
@@ -52,6 +59,7 @@ def add_patent_fee(fee_table, number, holder, changes_count=1):
 
 
 def populate_legal_context(context: dict[str, str], holder: Legal):
+    context['is_legal'] = 'true'
     context['ogrn'] = holder.ogrn
     context['inn'] = holder.inn
     context['kpp'] = holder.kpp
@@ -60,20 +68,26 @@ def populate_legal_context(context: dict[str, str], holder: Legal):
 
 
 def populate_person_context(context: dict[str, str], holder: Person):
+    context['is_peron'] = 'true'
     context['ceo_shortname'] = holder.get_fullname()
     context['ceo_position'] = 'Правообладатель'
+    context['inn'] = holder.inn
 
 
 def generate_letter_from_template(obj: IntelObject, old_address, new_post=None):
-    tm_template = DocxTemplate(COMMON_TM if obj.is_common else REGULAR_TM)
-    template = tm_template if isinstance(obj, Trademark) else DocxTemplate(PATENT)
+    template = DocxTemplate(PATENT)
+    if isinstance(obj, Trademark):
+        template = DocxTemplate(COMMON_TM if obj.is_common else REGULAR_TM)
     context = {
+        'registry_gen': patent_header[obj.type]['gen'],
         'holder_shortname': obj.holder.get_fullname(),
         'address': obj.holder.address,
+        'new_post': 'true' if new_post is not None else '',
+        'new_post_address': new_post,
         # 'post_address': trademark.post_address, # this correct, but...
         'post_address': 'Бердникову А.И., а/я 109, Москва, 109004',
-        'trademark_name': obj.name,
-        'trademark_number': obj.number,
+        'obj_name': obj.name,
+        'obj_number': obj.number,
         'old_address': old_address,
         'date': datetime.today().strftime('%d.%m.%Y')
     }
@@ -136,16 +150,15 @@ def process_select(select: int) -> list[IntelObject]:
             holders = repo.get_entities()
             for holder in holders:
                 print(f"{holder.id}: {holder.get_fullname()}")
-            query = int(input("Введите номер: "))
-            return repo.get_objects_by_holder(query, ObjectCategory.All)
-        case 2:
-            print("Выберите тип объектов по номеру:")
+            holder_query = int(input("Введите номер: "))
+            print("Выберите тип объектов по номеру (Enter для всех):")
             object_types = repo.get_categories()
             for category in object_types:
                 print(f"{category.id}: {category.name}")
-            query = int(input("Введите номер: "))
-            return repo.get_objects(ObjectCategory(query))
-        case 3:
+            category_query = input("Введите номер: ")
+            selected_category = ObjectCategory(int(category_query)) if category_query.isdigit() else ObjectCategory.All
+            return repo.get_objects_by_holder(holder_query, selected_category)
+        case 2:
             numbers = input("Введите номера объектов через запятую: ").split(",")
             assert len(numbers) > 0
             return repo.get_objects_by_numbers(numbers, ObjectCategory.All)
@@ -155,8 +168,8 @@ if __name__ == '__main__':
     db = DataBaseConnection()
     repo = IntelRepository(db)
     select = int(
-        input("Выберите вариант поиска, 1 - по правообладателю, 2 - по типу объектов, 3 - по номерам объектов: "))
-    assert 1 <= select <= 3
+        input("Выберите вариант поиска, 1 - по правообладателю, 2 - по номерам объектов: "))
+    assert select in [1, 2]
     query_result = process_select(select)
     assert len(query_result) > 0
     print(f"Будет обработано {len(query_result)} объектов")
