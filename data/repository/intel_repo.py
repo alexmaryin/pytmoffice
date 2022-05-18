@@ -1,4 +1,6 @@
 from enum import Enum
+
+from sqlalchemy import extract
 from sqlalchemy.orm import with_polymorphic
 from data.model.model import *
 from .common_repo import CommonRepository
@@ -167,3 +169,12 @@ class IntelRepository(CommonRepository):
     def get_objects_by_numbers(self, numbers: list[str], object_type=None) -> list[IntelObject]:
         types = objects_for_query[object_type]
         return self.source.query(types).filter(IntelObject.number.in_(numbers)).all()
+
+        # LICENSES_CRUD methods
+
+    def get_licenses(self) -> list[License]:
+        return self.source.query(License).order_by(License.number).all()
+
+    def get_active_licenses_expires_at(self, year: int) -> list[License]:
+        return self.source.query(License).filter(License.terminated is not False and extract('year', License.term) == year). \
+            order_by(License.term).all()
